@@ -1,0 +1,25 @@
+Patient Referral Letter
+Date: 13 February 2026
+
+To: Nairobi Hospital Referral Clinic
+
+Patient: Jane Wanjiku Mwangi
+Age: 34 years
+ID: 12345678
+
+Chief Complaint: Persistent chest pain for 3 days
+
+Vitals: BP 140/90 mmHg, Pulse 88 bpm, Temp 37.2°C, RR 18/min, SpO2 96%
+
+Working Diagnosis: Suspected Angina Pectoris
+
+Current Medications: Aspirin 75mg daily, Atorvastatin 20mg nightly
+
+Pending Investigations: ECG, Troponin I, Chest X-ray
+
+Management Plan: Admit for observation, start Nitroglycerin spray PRN
+
+Red Flags: Increasing pain on exertion, family history of CAD
+
+Referring Doctor: Dr. Eric Adesh
+Contact: +254 712 345 678

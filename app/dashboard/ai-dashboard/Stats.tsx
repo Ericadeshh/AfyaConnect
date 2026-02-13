@@ -5,39 +5,54 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, Zap, Target } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useState, useEffect } from "react";
 
 export default function Stats() {
   const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0);
+  todayStart.setUTCHours(0, 0, 0, 0); // Use UTC for consistency with stored ISO strings
   const todayTimestamp = todayStart.getTime();
 
   const summariesToday = useQuery(api.functions.ai_summaries.countToday, {
     today: todayTimestamp,
   });
 
-  const avgProcessingTime = useQuery(
-    api.functions.ai_summaries.avgProcessingTimeToday,
-    {
-      today: todayTimestamp,
-    },
-  );
+  const avgProcessingTime = useQuery(api.functions.ai_summaries.avgProcessingTimeToday, {
+    today: todayTimestamp,
+  });
 
-  const avgConfidence = useQuery(
-    api.functions.ai_summaries.avgConfidenceToday,
-    {
-      today: todayTimestamp,
-    },
-  );
+  const avgConfidence = useQuery(api.functions.ai_summaries.avgConfidenceToday, {
+    today: todayTimestamp,
+  });
 
-  const displayCount = summariesToday ?? "…";
+  // Track if we've ever received real data (prevents flicker on reconnect)
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
+
+  useEffect(() => {
+    if (summariesToday !== undefined) {
+      setHasLoadedOnce(true);
+    }
+  }, [summariesToday]);
+
+  // isLoading = true only on initial fetch or when args change
+  const isInitialLoading = summariesToday === undefined;
+
+  // Display logic: show "…" only during first load
+  // After load → use real values or defaults (0 / —)
+  const displayCount = isInitialLoading ? "…" : (summariesToday ?? 0);
+
   const displayTime =
-    avgProcessingTime !== undefined && avgProcessingTime !== null
-      ? `${avgProcessingTime.toFixed(1)}s`
-      : "…";
+    isInitialLoading
+      ? "…"
+      : avgProcessingTime != null
+        ? `${avgProcessingTime.toFixed(1)}s`
+        : "—";
+
   const displayConf =
-    avgConfidence !== undefined && avgConfidence !== null
-      ? `${Math.round(avgConfidence)}%`
-      : "…";
+    isInitialLoading
+      ? "…"
+      : avgConfidence != null
+        ? `${Math.round(avgConfidence)}%`
+        : "—";
 
   const stats = [
     { title: "Summaries Today", value: displayCount, icon: BarChart3 },
@@ -63,7 +78,11 @@ export default function Stats() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-slate-800">
-                {stat.value}
+                {isInitialLoading ? (
+                  <span className="animate-pulse">…</span>
+                ) : (
+                  stat.value
+                )}
               </div>
             </CardContent>
           </Card>

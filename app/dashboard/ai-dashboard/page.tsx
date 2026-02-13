@@ -46,15 +46,63 @@ export default function AIDashboard() {
     setSaved(false);
 
     try {
-      const args: any = {
+      let args: any = {
         inputType: activeTab === "upload" ? "file" : activeTab,
         text: activeTab === "text" ? inputText.trim() : undefined,
         url: activeTab === "url" ? url.trim() : undefined,
       };
 
-      if (file && (activeTab === "upload" || activeTab === "image")) {
-        args.file = await file.arrayBuffer();
-        args.fileName = file.name;
+      // Client-side PDF text extraction using pdf.js
+      if (activeTab === "upload" && file) {
+        const ext = file.name.split(".").pop()?.toLowerCase();
+
+        if (ext === "pdf") {
+          try {
+            const arrayBuffer = await file.arrayBuffer();
+
+            const pdfjsLib = await import("pdfjs-dist");
+
+            // Use local worker file (copied to public/)
+            pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
+            const pdf = await pdfjsLib.getDocument({
+              data: new Uint8Array(arrayBuffer),
+            }).promise;
+            let extractedText = "";
+
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+              const page = await pdf.getPage(pageNum);
+              const content = await page.getTextContent();
+              const pageText = content.items
+                .map((item: any) => item.str)
+                .join(" ");
+              extractedText += pageText + "\n";
+            }
+
+            extractedText = extractedText.trim();
+
+            if (!extractedText) {
+              throw new Error(
+                "No text could be extracted from this PDF. It may be scanned/image-based.",
+              );
+            }
+
+            args = {
+              inputType: "text",
+              text: extractedText,
+            };
+          } catch (pdfErr: any) {
+            setError(
+              `Failed to extract PDF text: ${pdfErr.message || "unknown error"}`,
+            );
+            setLoading(false);
+            return;
+          }
+        } else {
+          // DOCX / TXT → send to server
+          args.file = await file.arrayBuffer();
+          args.fileName = file.name;
+        }
       }
 
       const result = await summarizeAction(args);
@@ -78,10 +126,10 @@ export default function AIDashboard() {
         inputType: args.inputType,
         inputPreview,
         summary: generatedSummary,
-        confidence: result.method === "vision" ? 92 : 88, // placeholder – can be improved
+        confidence: result.method === "vision" ? 92 : 88,
         modelUsed:
           result.method === "vision" ? "openai-gpt-4o" : "groq-llama-3.3-70b",
-        processingTimeMs, // ← now saved!
+        processingTimeMs,
       });
 
       setSaved(true);
@@ -94,11 +142,11 @@ export default function AIDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-slate-50 to-white pb-20">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-20">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-6xl pt-10">
         <Header />
         <Stats />
-        <Explanation confidence={88} /> {/* can be dynamic later */}
+        <Explanation confidence={88} />
         <Card className="border-none shadow-2xl">
           <CardHeader className="bg-slate-50">
             <CardTitle className="text-2xl">
@@ -128,7 +176,7 @@ export default function AIDashboard() {
                 onClick={handleSubmit}
                 disabled={loading}
                 size="lg"
-                className="min-w-50 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                className="min-w-[180px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
               >
                 {loading ? (
                   <>
@@ -152,6 +200,7 @@ export default function AIDashboard() {
             )}
           </CardContent>
         </Card>
+
         {summary && (
           <>
             <SummaryOutput
