@@ -247,3 +247,93 @@ export const cancelReferral = mutation({
     };
   },
 });
+
+// Approve referral (admin only) - NEW
+export const approveReferral = mutation({
+  args: {
+    adminToken: v.string(),
+    referralId: v.id("referrals"),
+    adminNotes: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<{ success: boolean }> => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", args.adminToken))
+      .first();
+
+    if (!session) {
+      throw new Error("Unauthorized");
+    }
+
+    const admin = await ctx.db.get(session.userId);
+    if (!admin || admin.role !== "admin") {
+      throw new Error("Admin access required");
+    }
+
+    const now = new Date().toISOString();
+
+    await ctx.db.patch(args.referralId, {
+      status: "approved",
+      approvedAt: now,
+      approvedBy: admin._id,
+      adminNotes: args.adminNotes,
+      updatedAt: now,
+    });
+
+    // Log the action
+    await ctx.db.insert("adminLogs", {
+      adminId: admin._id,
+      action: "APPROVE_REFERRAL",
+      targetType: "referral",
+      targetId: args.referralId,
+      details: { notes: args.adminNotes },
+      timestamp: now,
+    });
+
+    return { success: true };
+  },
+});
+
+// Reject referral (admin only) - NEW
+export const rejectReferral = mutation({
+  args: {
+    adminToken: v.string(),
+    referralId: v.id("referrals"),
+    rejectionReason: v.string(),
+  },
+  handler: async (ctx, args): Promise<{ success: boolean }> => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", args.adminToken))
+      .first();
+
+    if (!session) {
+      throw new Error("Unauthorized");
+    }
+
+    const admin = await ctx.db.get(session.userId);
+    if (!admin || admin.role !== "admin") {
+      throw new Error("Admin access required");
+    }
+
+    const now = new Date().toISOString();
+
+    await ctx.db.patch(args.referralId, {
+      status: "rejected",
+      adminNotes: args.rejectionReason,
+      updatedAt: now,
+    });
+
+    // Log the action
+    await ctx.db.insert("adminLogs", {
+      adminId: admin._id,
+      action: "REJECT_REFERRAL",
+      targetType: "referral",
+      targetId: args.referralId,
+      details: { reason: args.rejectionReason },
+      timestamp: now,
+    });
+
+    return { success: true };
+  },
+});

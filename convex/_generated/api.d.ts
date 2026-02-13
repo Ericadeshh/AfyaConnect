@@ -9,9 +9,14 @@
  */
 
 import type * as actions_ai_summarize from "../actions/ai_summarize.js";
+import type * as admin_facilityMutations from "../admin/facilityMutations.js";
+import type * as admin_physicianMutations from "../admin/physicianMutations.js";
+import type * as admin_queries from "../admin/queries.js";
 import type * as auth_actions from "../auth/actions.js";
 import type * as auth_mutations from "../auth/mutations.js";
 import type * as auth_queries from "../auth/queries.js";
+import type * as facilities_index from "../facilities/index.js";
+import type * as facilities_queries from "../facilities/queries.js";
 import type * as functions_ai_summaries from "../functions/ai_summaries.js";
 import type * as referrals_mutations from "../referrals/mutations.js";
 import type * as referrals_queries from "../referrals/queries.js";
@@ -25,9 +30,14 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "actions/ai_summarize": typeof actions_ai_summarize;
+  "admin/facilityMutations": typeof admin_facilityMutations;
+  "admin/physicianMutations": typeof admin_physicianMutations;
+  "admin/queries": typeof admin_queries;
   "auth/actions": typeof auth_actions;
   "auth/mutations": typeof auth_mutations;
   "auth/queries": typeof auth_queries;
+  "facilities/index": typeof facilities_index;
+  "facilities/queries": typeof facilities_queries;
   "functions/ai_summaries": typeof functions_ai_summaries;
   "referrals/mutations": typeof referrals_mutations;
   "referrals/queries": typeof referrals_queries;

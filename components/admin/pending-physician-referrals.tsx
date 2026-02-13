@@ -1,646 +1,491 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
-import { db } from "../../lib/db";
-import { sendSTKPaymentPrompt } from "../../lib/payment";
+import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FileText,
+  CheckCircle,
+  XCircle,
+  Clock,
+  AlertTriangle,
+  User,
+  Building2,
+  Calendar,
+  Activity,
+  ChevronRight,
+  Eye,
+  Search,
+  RefreshCw,
+  AlertCircle,
+  ThumbsUp,
+  ThumbsDown,
+  ArrowLeft,
+  Loader2,
+  CheckCircle2,
+} from "lucide-react";
+import { format } from "date-fns";
+
+interface Referral {
+  _id: Id<"referrals">;
+  referralNumber: string;
+  patientName: string;
+  patientAge: number;
+  patientGender: string;
+  patientContact: string;
+  referringPhysicianId: Id<"users">;
+  referringPhysicianName: string;
+  referringHospital: string;
+  diagnosis: string;
+  clinicalSummary: string;
+  reasonForReferral: string;
+  urgency: "routine" | "urgent" | "emergency";
+  referredToFacility: string;
+  referredToDepartment?: string;
+  referredToPhysician?: string;
+  status: string;
+  submittedAt: string;
+  physicianNotes?: string;
+  adminNotes?: string;
+}
 
 export default function PendingPhysicianReferrals() {
-  const [referrals, setReferrals] = useState<any[]>([]);
-  const [selectedReferral, setSelectedReferral] = useState<any>(null);
-  const [showBiodataModal, setShowBiodataModal] = useState(false);
-  const [showEditPhoneModal, setShowEditPhoneModal] = useState(false);
-  const [biodataForm, setBiodataForm] = useState({
-    patientPhone: "",
-    stkPhoneNumber: "",
-    patientDateOfBirth: "",
-    patientNationalId: "",
-    bookedDate: "",
-  });
-  const [editPhoneData, setEditPhoneData] = useState({
-    patientPhone: "",
-    stkPhoneNumber: "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [resending, setResending] = useState<string | null>(null);
-  // Generate 6-char alphanumeric token
-  const generateToken = (length = 6) => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let out = "";
-    for (let i = 0; i < length; i++) {
-      out += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return out;
-  };
-  const [biodataCode, setBiodataCode] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedReferral, setSelectedReferral] = useState<Referral | null>(
+    null,
+  );
+  const [showDetails, setShowDetails] = useState(false);
+  const [approvalNotes, setApprovalNotes] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const { token } = useAuth();
 
-  const generateBiodataCode = (length = 6) => {
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let result = "";
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return result;
-  };
+  // Queries
+  const pendingReferrals = useQuery(
+    api.referrals.queries.getPendingReferralsAdmin,
+    {
+      adminToken: token || "",
+    },
+  );
 
-  useEffect(() => {
-    loadReferrals();
-    const interval = setInterval(() => {
-      loadReferrals();
-    }, 3000);
-    // Listen for immediate referral creation events from physician UI
-    const handler = (e: any) => {
-      loadReferrals();
-    };
+  // Mutations
+  const approveReferral = useMutation(api.referrals.mutations.approveReferral);
+  const rejectReferral = useMutation(api.referrals.mutations.rejectReferral);
 
-    if (typeof window !== "undefined") {
-      window.addEventListener("referral:created", handler as EventListener);
-    }
-
-    return () => {
-      clearInterval(interval);
-      if (typeof window !== "undefined") {
-        window.removeEventListener("referral:created", handler as EventListener);
-      }
-    };
-  }, []);
-
-  const loadReferrals = () => {
-    const all = Array.from(db.referrals.values());
-
-    // Track existing tokens to avoid collisions
-    const existingTokens = new Set<string>();
-    all.forEach((r: any) => {
-      if (r.referralToken) existingTokens.add(r.referralToken);
-    });
-
-    const filtered = all
-      .filter(
-        (ref) =>
-          ref.status === "pending-admin" ||
-          ref.status === "awaiting-biodata" ||
-          ref.status === "pending-payment",
-      )
-      .map((ref) => {
-        // For pending-admin referrals, ensure a single token per patient MRN-
-        if (ref.status === "pending-admin") {
-          const pid = ref.patientId;
-          if (pid && String(pid).startsWith("MRN-")) {
-            // find any existing referral with same patientId that already has a token
-            const existing = all.find(
-              (r2: any) => r2.patientId === pid && r2.referralToken,
-            );
-            if (existing) {
-              if (!ref.referralToken) {
-                ref.referralToken = existing.referralToken;
-                db.referrals.set(ref.id, ref);
-              }
-            } else {
-              if (!ref.referralToken) {
-                let token = generateToken();
-                while (existingTokens.has(token)) token = generateToken();
-                existingTokens.add(token);
-                ref.referralToken = token;
-                db.referrals.set(ref.id, ref);
-              }
-            }
-          } else {
-            // For other referrals without MRN-, ensure they have a token too
-            if (!ref.referralToken) {
-              let token = generateToken();
-              while (existingTokens.has(token)) token = generateToken();
-              existingTokens.add(token);
-              ref.referralToken = token;
-              db.referrals.set(ref.id, ref);
-            }
-          }
-        }
-
-        return ref;
-      });
-
-    setReferrals(filtered);
-  };
-
-  const handleStartBiodata = (referral: any) => {
-    setSelectedReferral(referral);
-    setBiodataForm({
-      patientPhone: referral.patientPhone || "",
-      stkPhoneNumber: referral.stkPhoneNumber || "",
-      patientDateOfBirth: referral.patientDateOfBirth || "",
-      patientNationalId: referral.patientNationalId || "",
-      bookedDate: referral.bookedDate || "",
-    });
-    setShowBiodataModal(true);
-    setBiodataCode(generateBiodataCode());
-  };
-
-  const handleSaveBiodata = async () => {
-    if (!selectedReferral) return;
-    if (!biodataForm.patientPhone || !biodataForm.stkPhoneNumber) {
-      alert("Please fill in patient phone and STK phone number");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const referral = db.referrals.get(selectedReferral.id);
-      if (referral) {
-        referral.patientPhone = biodataForm.patientPhone;
-        referral.stkPhoneNumber = biodataForm.stkPhoneNumber;
-        referral.patientDateOfBirth = biodataForm.patientDateOfBirth;
-        referral.patientNationalId = biodataForm.patientNationalId;
-        referral.bookedDate = biodataForm.bookedDate;
-        referral.status = "pending-payment";
-        referral.updatedAt = new Date();
-
-        // Send STK prompt
-        const stkResult = await sendSTKPaymentPrompt(
-          referral.id,
-          biodataForm.stkPhoneNumber,
-          50,
-        );
-
-        if (stkResult.success) {
-          // attach generated code to referral for tracking
-          referral.biodataCode = biodataCode || null;
-          referral.stkSentCount = 1;
-          db.referrals.set(referral.id, referral);
-          loadReferrals();
-          setShowBiodataModal(false);
-          setSelectedReferral(null);
-          setBiodataCode(null);
-          alert("Biodata saved and STK prompt sent successfully!");
-        } else {
-          alert("Failed to send STK prompt");
-        }
-      }
-    } catch (err) {
-      console.log("[v0] Error:", err);
-      alert("Error processing referral");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleEditPhone = (referral: any) => {
-    setSelectedReferral(referral);
-    setEditPhoneData({
-      patientPhone: referral.patientPhone || "",
-      stkPhoneNumber: referral.stkPhoneNumber || "",
-    });
-    setShowEditPhoneModal(true);
-  };
-
-  const handleSaveEditPhone = async () => {
-    if (!selectedReferral) return;
-
-    setLoading(true);
-    try {
-      const referral = db.referrals.get(selectedReferral.id);
-      if (referral) {
-        referral.patientPhone = editPhoneData.patientPhone;
-        referral.stkPhoneNumber = editPhoneData.stkPhoneNumber;
-        referral.updatedAt = new Date();
-        db.referrals.set(referral.id, referral);
-        loadReferrals();
-        setShowEditPhoneModal(false);
-        setSelectedReferral(null);
-        alert("Phone numbers updated successfully");
-      }
-    } catch (err) {
-      alert("Error updating phone numbers");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResendSTK = async (referral: any) => {
-    if (!referral.stkPhoneNumber) {
-      alert("STK phone number not set");
-      return;
-    }
-
-    setResending(referral.id);
-    try {
-      const result = await sendSTKPaymentPrompt(
-        referral.id,
-        referral.stkPhoneNumber,
-        50,
-      );
-
-      if (result.success) {
-        const updated = db.referrals.get(referral.id);
-        if (updated) {
-          updated.stkSentCount = (updated.stkSentCount || 0) + 1;
-          db.referrals.set(referral.id, updated);
-          loadReferrals();
-        }
-        alert(`STK resent successfully to ${referral.stkPhoneNumber}`);
-      } else {
-        alert(`Failed to resend STK: ${result.message}`);
-      }
-    } catch (err) {
-      alert("Error resending STK");
-    } finally {
-      setResending(null);
-    }
-  };
-
-  const handleConfirmPayment = (referral: any) => {
-    const updated = db.referrals.get(referral.id);
-    if (updated) {
-      updated.status = "paid";
-      updated.updatedAt = new Date();
-      updated.paidAt = new Date();
-      updated.completedAt = new Date();
-      db.referrals.set(referral.id, updated);
-      // notify listeners so completed list updates immediately
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("referral:completed", { detail: updated }));
-      }
-      loadReferrals();
-      alert("Referral confirmed and moved to completed referrals!");
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "Routine":
-        return "bg-success bg-opacity-10 text-success";
-      case "Urgent":
-        return "bg-warning bg-opacity-10 text-warning";
-      case "Emergency":
-        return "bg-error bg-opacity-10 text-error";
+  const getUrgencyColor = (urgency: string) => {
+    switch (urgency) {
+      case "emergency":
+        return "text-red-600 bg-red-50 border-red-200";
+      case "urgent":
+        return "text-orange-600 bg-orange-50 border-orange-200";
       default:
-        return "bg-gray-100 text-gray-700";
+        return "text-blue-600 bg-blue-50 border-blue-200";
     }
   };
 
-  return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-warning mb-6">
-        Pending Physician Referrals
-      </h2>
+  const getUrgencyIcon = (urgency: string) => {
+    switch (urgency) {
+      case "emergency":
+        return <AlertTriangle className="w-4 h-4" />;
+      case "urgent":
+        return <Clock className="w-4 h-4" />;
+      default:
+        return <Activity className="w-4 h-4" />;
+    }
+  };
 
-      {referrals.length === 0 ? (
-        <Card className="p-8 text-center">
-          <p className="text-text-secondary">
-            No pending referrals at the moment
-          </p>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {referrals.map((referral) => (
-            <Card key={referral.id} className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <p className="text-xs text-text-secondary mb-1">
-                    Patient Name
-                  </p>
-                  <p className="font-semibold">{referral.patientName}</p>
-                  <p className="text-xs text-text-secondary">
-                    ID: {referral.patientId || "N/A"}
-                  </p>
-                </div>
-                <div className="flex items-center">
-                  {referral.referralToken && (
-                    <div className="ml-auto text-sm font-mono bg-gray-100 text-gray-800 px-2 py-1 rounded">
-                      {referral.referralToken}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <p className="text-xs text-text-secondary mb-1">
-                    Referral Type
-                  </p>
+  const handleApprove = async (referralId: Id<"referrals">) => {
+    setIsProcessing(true);
+    try {
+      await approveReferral({
+        adminToken: token,
+        referralId,
+        adminNotes: approvalNotes,
+      });
+      setSuccessMessage("Referral approved successfully!");
+      setShowSuccess(true);
+      setApprovalNotes("");
+      setShowDetails(false);
+      setSelectedReferral(null);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (error) {
+      console.error("Error approving referral:", error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleReject = async (referralId: Id<"referrals">) => {
+    setIsProcessing(true);
+    try {
+      await rejectReferral({
+        adminToken: token,
+        referralId,
+        rejectionReason: approvalNotes || "Referral rejected by admin",
+      });
+      setSuccessMessage("Referral rejected successfully!");
+      setShowSuccess(true);
+      setApprovalNotes("");
+      setShowDetails(false);
+      setSelectedReferral(null);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (error) {
+      console.error("Error rejecting referral:", error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const filteredReferrals = pendingReferrals?.filter((referral: Referral) => {
+    return (
+      referral.patientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      referral.referralNumber
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      referral.referringPhysicianName
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      referral.referredToFacility
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase())
+    );
+  });
+
+  if (showDetails && selectedReferral) {
+    return (
+      <div className="space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-between">
+          <Button
+            onClick={() => {
+              setShowDetails(false);
+              setSelectedReferral(null);
+            }}
+            variant="outline"
+            className="flex items-center gap-2 text-sm sm:text-base"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to List
+          </Button>
+          <h2 className="text-lg sm:text-xl font-bold text-gray-800">
+            Referral Details
+          </h2>
+          <div className="w-16 sm:w-24"></div>
+        </div>
+
+        <Card className="p-4 sm:p-6">
+          <div className="space-y-4 sm:space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+              <div>
+                <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800">
+                    #{selectedReferral.referralNumber}
+                  </h3>
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(referral.priority)}`}
+                    className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium flex items-center gap-1 ${getUrgencyColor(selectedReferral.urgency)}`}
                   >
-                    {referral.priority}
+                    {getUrgencyIcon(selectedReferral.urgency)}
+                    {selectedReferral.urgency}
                   </span>
                 </div>
-                <div>
-                  <p className="text-xs text-text-secondary mb-1">Status</p>
-                  <p className="font-semibold">
-                    {referral.status === "pending-admin" &&
-                      "Awaiting Administration Action"}
-                    {referral.status === "awaiting-biodata" &&
-                      "Awaiting Biodata"}
-                    {referral.status === "pending-payment" && "Pending Payment"}
-                    {referral.status === "confirmed" && "Confirmed"}
+                <p className="text-xs sm:text-sm text-gray-500">
+                  Submitted:{" "}
+                  {format(new Date(selectedReferral.submittedAt), "PPP 'at' p")}
+                </p>
+              </div>
+            </div>
+
+            {/* Details Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              {/* Patient Info */}
+              <div className="space-y-2">
+                <h4 className="font-semibold text-gray-700 flex items-center gap-2 text-sm sm:text-base">
+                  <User className="w-4 h-4 text-blue-500" />
+                  Patient Information
+                </h4>
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg space-y-2 text-xs sm:text-sm">
+                  <p>
+                    <span className="text-gray-500">Name:</span>{" "}
+                    {selectedReferral.patientName}
+                  </p>
+                  <p>
+                    <span className="text-gray-500">Age:</span>{" "}
+                    {selectedReferral.patientAge}
+                  </p>
+                  <p>
+                    <span className="text-gray-500">Gender:</span>{" "}
+                    {selectedReferral.patientGender}
+                  </p>
+                  <p>
+                    <span className="text-gray-500">Contact:</span>{" "}
+                    {selectedReferral.patientContact}
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 py-4 border-t border-b border-border">
-                <div>
-                  <p className="text-xs text-text-secondary mb-1">From</p>
-                  <p className="text-sm">{referral.referringHospital}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-text-secondary mb-1">To</p>
-                  <p className="text-sm">{referral.receivingFacility}</p>
+              {/* Referring Physician */}
+              <div className="space-y-2">
+                <h4 className="font-semibold text-gray-700 flex items-center gap-2 text-sm sm:text-base">
+                  <Building2 className="w-4 h-4 text-blue-500" />
+                  Referring Physician
+                </h4>
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg space-y-2 text-xs sm:text-sm">
+                  <p>
+                    <span className="text-gray-500">Name:</span> Dr.{" "}
+                    {selectedReferral.referringPhysicianName}
+                  </p>
+                  <p>
+                    <span className="text-gray-500">Hospital:</span>{" "}
+                    {selectedReferral.referringHospital}
+                  </p>
                 </div>
               </div>
 
-              <div className="mb-4">
-                <p className="text-xs text-text-secondary mb-2">
-                  Medical History & Test Results
-                </p>
-                <details className="text-sm">
-                  <summary className="cursor-pointer font-medium text-primary">
-                    View Medical Details
-                  </summary>
-                  <div className="mt-2 p-3 bg-surface rounded space-y-2">
-                    <div>
-                      <p className="font-medium text-xs">History:</p>
-                      <p className="text-xs text-text-secondary">
-                        {referral.medicalHistory}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-xs">Lab Results:</p>
-                      <p className="text-xs text-text-secondary">
-                        {referral.labResults}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-xs">Diagnosis:</p>
-                      <p className="text-xs text-text-secondary">
-                        {referral.diagnosis}
-                      </p>
-                    </div>
-                  </div>
-                </details>
+              {/* Medical Info */}
+              <div className="space-y-2 sm:col-span-2">
+                <h4 className="font-semibold text-gray-700 flex items-center gap-2 text-sm sm:text-base">
+                  <Activity className="w-4 h-4 text-blue-500" />
+                  Medical Information
+                </h4>
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg space-y-2 text-xs sm:text-sm">
+                  <p>
+                    <span className="text-gray-500">Diagnosis:</span>{" "}
+                    {selectedReferral.diagnosis}
+                  </p>
+                  <p>
+                    <span className="text-gray-500">Summary:</span>{" "}
+                    {selectedReferral.clinicalSummary}
+                  </p>
+                  <p>
+                    <span className="text-gray-500">Reason:</span>{" "}
+                    {selectedReferral.reasonForReferral}
+                  </p>
+                </div>
               </div>
 
-              {referral.status !== "pending-admin" && (
-                <div className="mb-4 p-3 bg-surface rounded space-y-2">
-                  <p className="text-xs font-semibold">Payment Information</p>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <p className="text-text-secondary">Patient Phone:</p>
-                      <p className="font-mono">{referral.patientPhone}</p>
-                    </div>
-                    <div>
-                      <p className="text-text-secondary">STK Phone:</p>
-                      <p className="font-mono">{referral.stkPhoneNumber}</p>
-                    </div>
-                  </div>
-                  {referral.bookedDate && (
-                    <div className="text-xs">
-                      <p className="text-text-secondary">Booked: {referral.bookedDate}</p>
-                    </div>
+              {/* Receiving Facility */}
+              <div className="space-y-2 sm:col-span-2">
+                <h4 className="font-semibold text-gray-700 flex items-center gap-2 text-sm sm:text-base">
+                  <Building2 className="w-4 h-4 text-blue-500" />
+                  Receiving Facility
+                </h4>
+                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg text-xs sm:text-sm">
+                  <p>
+                    <span className="text-gray-500">Facility:</span>{" "}
+                    {selectedReferral.referredToFacility}
+                  </p>
+                  {selectedReferral.referredToDepartment && (
+                    <p>
+                      <span className="text-gray-500">Department:</span>{" "}
+                      {selectedReferral.referredToDepartment}
+                    </p>
                   )}
-                  {referral.status === "pending-payment" && (
-                    <p className="text-xs text-warning">
-                      STK sent {referral.stkSentCount} time(s)
+                  {selectedReferral.referredToPhysician && (
+                    <p>
+                      <span className="text-gray-500">Physician:</span>{" "}
+                      {selectedReferral.referredToPhysician}
                     </p>
                   )}
                 </div>
-              )}
-
-              <div className="flex gap-2 flex-wrap">
-                {referral.status === "pending-admin" && (
-                  <Button
-                    onClick={() => handleStartBiodata(referral)}
-                    className="bg-warning text-white hover:opacity-90"
-                  >
-                    Add Biodata & Send STK
-                  </Button>
-                )}
-
-                {referral.status === "pending-payment" && (
-                  <>
-                    <Button
-                      onClick={() => handleResendSTK(referral)}
-                      disabled={resending === referral.id}
-                      className="btn-secondary text-xs"
-                    >
-                      {resending === referral.id ? "Sending..." : "Resend STK"}
-                    </Button>
-                    <Button
-                      onClick={() => handleEditPhone(referral)}
-                      className="btn-secondary text-xs"
-                    >
-                      Edit Phone Numbers
-                    </Button>
-                    <Button
-                      onClick={() => handleConfirmPayment(referral)}
-                      className="bg-success text-white hover:opacity-90 text-xs"
-                    >
-                      Mark as Paid
-                    </Button>
-                  </>
-                )}
-
-                {referral.status === "confirmed" && (
-                  <div className="text-xs text-success font-semibold">
-                    ✓ Referral Completed
-                  </div>
-                )}
               </div>
-            </Card>
-          ))}
-        </div>
-      )}
+            </div>
 
-      {/* Biodata Modal */}
-      {showBiodataModal && selectedReferral && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <Card className="p-6 max-w-2xl w-full bg-background">
-            <h3 className="text-lg font-bold mb-4">
-              Add Patient Biodata & Send STK
-            </h3>
-              {biodataCode && (
-                <p className="text-sm font-mono mb-2">
-                  Referral Code: <span className="font-bold">{biodataCode}</span>
+            {/* Physician Notes */}
+            {selectedReferral.physicianNotes && (
+              <div className="p-3 sm:p-4 bg-blue-50 rounded-lg">
+                <p className="font-medium text-blue-800 mb-1 text-sm sm:text-base">
+                  Physician Notes
                 </p>
-              )}
-            <p className="text-xs text-text-secondary mb-4">
-              Patient: {selectedReferral.patientName}
-            </p>
-
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Patient Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    value={biodataForm.patientPhone}
-                    onChange={(e) =>
-                      setBiodataForm({
-                        ...biodataForm,
-                        patientPhone: e.target.value,
-                      })
-                    }
-                    className="input-base"
-                    placeholder="+254712345678"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Phone for STK Prompt *
-                  </label>
-                  <input
-                    type="tel"
-                    value={biodataForm.stkPhoneNumber}
-                    onChange={(e) =>
-                      setBiodataForm({
-                        ...biodataForm,
-                        stkPhoneNumber: e.target.value,
-                      })
-                    }
-                    className="input-base"
-                    placeholder="+254712345678"
-                  />
-                </div>
+                <p className="text-blue-600 text-xs sm:text-sm">
+                  {selectedReferral.physicianNotes}
+                </p>
               </div>
+            )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Date of Birth
-                  </label>
-                  <input
-                    type="date"
-                    value={biodataForm.patientDateOfBirth}
-                    onChange={(e) =>
-                      setBiodataForm({
-                        ...biodataForm,
-                        patientDateOfBirth: e.target.value,
-                      })
-                    }
-                    className="input-base"
-                  />
+            {/* Admin Actions */}
+            <div className="p-4 sm:p-6 bg-yellow-50 rounded-lg border border-yellow-200">
+              <h4 className="font-medium text-yellow-800 mb-3 text-sm sm:text-base">
+                Admin Action Required
+              </h4>
+              <div className="space-y-3">
+                <textarea
+                  placeholder="Add approval notes or reason for rejection (optional)"
+                  value={approvalNotes}
+                  onChange={(e) => setApprovalNotes(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 sm:px-4 py-2 text-sm border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500"
+                />
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button
+                    onClick={() => handleApprove(selectedReferral._id)}
+                    disabled={isProcessing}
+                    className="bg-green-500 hover:bg-green-600 text-white flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <CheckCircle className="w-4 h-4" />
+                    )}
+                    Approve Referral
+                  </Button>
+                  <Button
+                    onClick={() => handleReject(selectedReferral._id)}
+                    disabled={isProcessing}
+                    variant="outline"
+                    className="text-red-600 border-red-200 hover:bg-red-50 flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <XCircle className="w-4 h-4" />
+                    )}
+                    Reject Referral
+                  </Button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    National ID
-                  </label>
-                  <input
-                    type="text"
-                    value={biodataForm.patientNationalId}
-                    onChange={(e) =>
-                      setBiodataForm({
-                        ...biodataForm,
-                        patientNationalId: e.target.value,
-                      })
-                    }
-                    className="input-base"
-                    placeholder="e.g., 12345678"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Booked Date
-                  </label>
-                  <input
-                    type="date"
-                    value={biodataForm.bookedDate}
-                    onChange={(e) =>
-                      setBiodataForm({
-                        ...biodataForm,
-                        bookedDate: e.target.value,
-                      })
-                    }
-                    className="input-base"
-                  />
-                </div>
-                
               </div>
             </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
-            <div className="flex gap-2 mt-6 justify-end">
-              <Button
-                onClick={() => setShowBiodataModal(false)}
-                className="btn-secondary"
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveBiodata}
-                className="bg-warning text-white hover:opacity-90"
-                disabled={loading}
-              >
-                {loading ? "Processing..." : "Send STK Prompt"}
-              </Button>
-            </div>
-          </Card>
+  return (
+    <div className="space-y-4 sm:space-y-6">
+      {/* Success Message */}
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3 text-green-700"
+          >
+            <CheckCircle2 className="w-5 h-5" />
+            {successMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
+          Pending Referrals
+        </h2>
+        <div className="text-xs sm:text-sm text-gray-500">
+          {pendingReferrals?.length || 0} awaiting approval
         </div>
-      )}
+      </div>
 
-      {/* Edit Phone Modal */}
-      {showEditPhoneModal && selectedReferral && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <Card className="p-6 max-w-md w-full bg-background">
-            <h3 className="text-lg font-bold mb-4">Edit Phone Numbers</h3>
-            <p className="text-xs text-text-secondary mb-4">
-              Referral: {selectedReferral.patientName}
-            </p>
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+        <input
+          type="text"
+          placeholder="Search by patient, referral #, physician or facility..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500"
+        />
+      </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Patient Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={editPhoneData.patientPhone}
-                  onChange={(e) =>
-                    setEditPhoneData({
-                      ...editPhoneData,
-                      patientPhone: e.target.value,
-                    })
-                  }
-                  className="input-base"
-                  placeholder="+254712345678"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  STK Receiving Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={editPhoneData.stkPhoneNumber}
-                  onChange={(e) =>
-                    setEditPhoneData({
-                      ...editPhoneData,
-                      stkPhoneNumber: e.target.value,
-                    })
-                  }
-                  className="input-base"
-                  placeholder="+254712345678"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2 mt-6 justify-end">
-              <Button
-                onClick={() => setShowEditPhoneModal(false)}
-                className="btn-secondary"
-                disabled={loading}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSaveEditPhone}
-                className="bg-warning text-white hover:opacity-90"
-                disabled={loading}
-              >
-                {loading ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
-          </Card>
+      {/* Referrals List */}
+      {pendingReferrals === undefined ? (
+        <div className="text-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-yellow-500 mx-auto" />
+        </div>
+      ) : filteredReferrals?.length === 0 ? (
+        <Card className="p-8 sm:p-12 text-center">
+          <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg sm:text-xl font-medium text-gray-700 mb-2">
+            No Pending Referrals
+          </h3>
+          <p className="text-sm sm:text-base text-gray-500">
+            All caught up! No referrals awaiting approval.
+          </p>
+        </Card>
+      ) : (
+        <div className="space-y-3 sm:space-y-4">
+          {filteredReferrals?.map((referral: Referral) => (
+            <motion.div
+              key={referral._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card className="p-4 sm:p-6 hover:shadow-lg transition-shadow">
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
+                      <h3 className="font-semibold text-base sm:text-lg">
+                        {referral.patientName}
+                      </h3>
+                      <span
+                        className={`px-2 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getUrgencyColor(referral.urgency)}`}
+                      >
+                        {getUrgencyIcon(referral.urgency)}
+                        {referral.urgency}
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-gray-600 mb-1">
+                      #{referral.referralNumber}
+                    </p>
+                    <p className="text-xs sm:text-sm text-gray-600 mb-2">
+                      From: Dr. {referral.referringPhysicianName} • To:{" "}
+                      {referral.referredToFacility}
+                    </p>
+                    <p className="text-xs sm:text-sm text-gray-500 flex items-center gap-1">
+                      <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                      {format(new Date(referral.submittedAt), "PPP")}
+                    </p>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedReferral(referral);
+                        setShowDetails(true);
+                      }}
+                      className="w-full sm:w-auto flex items-center justify-center gap-1 text-xs sm:text-sm"
+                    >
+                      <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                      View
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-green-500 hover:bg-green-600 text-white w-full sm:w-auto flex items-center justify-center gap-1 text-xs sm:text-sm"
+                      onClick={() => {
+                        setSelectedReferral(referral);
+                        setShowDetails(true);
+                      }}
+                    >
+                      <ThumbsUp className="w-3 h-3 sm:w-4 sm:h-4" />
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-red-600 border-red-200 hover:bg-red-50 w-full sm:w-auto flex items-center justify-center gap-1 text-xs sm:text-sm"
+                      onClick={() => {
+                        setSelectedReferral(referral);
+                        setShowDetails(true);
+                      }}
+                    >
+                      <ThumbsDown className="w-3 h-3 sm:w-4 sm:h-4" />
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </motion.div>
+          ))}
         </div>
       )}
     </div>

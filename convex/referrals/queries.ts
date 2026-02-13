@@ -1,7 +1,16 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
+import { Doc, Id } from "../_generated/dataModel";
 import { validatePhysicianAccess } from "./utils";
-import { Doc } from "../_generated/dataModel";
+
+// Define the status type to match the schema
+type ReferralStatus =
+  | "pending"
+  | "approved"
+  | "forwarded"
+  | "completed"
+  | "rejected"
+  | "cancelled";
 
 // Get all referrals for a physician
 export const getPhysicianReferrals = query({
@@ -30,17 +39,30 @@ export const getPhysicianReferrals = query({
       throw new Error("Unauthorized: Invalid physician session");
     }
 
-    let query = ctx.db
-      .query("referrals")
-      .withIndex("by_referringPhysicianId", (q) =>
-        q.eq("referringPhysicianId", args.physicianId),
-      );
+    // Build query without reassigning
+    let referrals: Doc<"referrals">[];
 
     if (args.status) {
-      query = query.filter((q) => q.eq(q.field("status"), args.status));
+      referrals = await ctx.db
+        .query("referrals")
+        .withIndex("by_referringPhysicianId_and_status", (q) =>
+          q
+            .eq("referringPhysicianId", args.physicianId)
+            .eq("status", args.status as ReferralStatus),
+        )
+        .order("desc")
+        .collect();
+    } else {
+      referrals = await ctx.db
+        .query("referrals")
+        .withIndex("by_referringPhysicianId", (q) =>
+          q.eq("referringPhysicianId", args.physicianId),
+        )
+        .order("desc")
+        .collect();
     }
 
-    return await query.order("desc").collect();
+    return referrals;
   },
 });
 
@@ -189,5 +211,163 @@ export const getReferralStats = query({
     });
 
     return stats;
+  },
+});
+
+// Get all referrals (for admin)
+export const getAllReferralsAdmin = query({
+  args: {
+    adminToken: v.string(),
+    status: v.optional(
+      v.union(
+        v.literal("pending"),
+        v.literal("approved"),
+        v.literal("forwarded"),
+        v.literal("completed"),
+        v.literal("rejected"),
+        v.literal("cancelled"),
+      ),
+    ),
+  },
+  handler: async (ctx, args): Promise<Doc<"referrals">[]> => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", args.adminToken))
+      .first();
+
+    if (!session) {
+      throw new Error("Unauthorized");
+    }
+
+    const user = await ctx.db.get(session.userId);
+    if (!user || user.role !== "admin") {
+      throw new Error("Admin access required");
+    }
+
+    let referrals: Doc<"referrals">[];
+
+    if (args.status) {
+      referrals = await ctx.db
+        .query("referrals")
+        .withIndex("by_status", (q) =>
+          q.eq("status", args.status as ReferralStatus),
+        )
+        .order("desc")
+        .collect();
+    } else {
+      referrals = await ctx.db.query("referrals").order("desc").collect();
+    }
+
+    return referrals;
+  },
+});
+
+// Get completed referrals for admin
+export const getCompletedReferralsAdmin = query({
+  args: {
+    adminToken: v.string(),
+  },
+  handler: async (ctx, args): Promise<Doc<"referrals">[]> => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", args.adminToken))
+      .first();
+
+    if (!session) {
+      throw new Error("Unauthorized");
+    }
+
+    const user = await ctx.db.get(session.userId);
+    if (!user || user.role !== "admin") {
+      throw new Error("Admin access required");
+    }
+
+    return await ctx.db
+      .query("referrals")
+      .withIndex("by_status", (q) => q.eq("status", "completed"))
+      .order("desc")
+      .collect();
+  },
+});
+
+// Get all referrals (for calendar view)
+export const getAllReferrals = query({
+  args: {
+    token: v.string(),
+  },
+  handler: async (ctx, args): Promise<Doc<"referrals">[]> => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", args.token))
+      .first();
+
+    if (!session) {
+      throw new Error("Unauthorized");
+    }
+
+    const user = await ctx.db.get(session.userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // If physician, only return their referrals
+    if (user.role === "physician") {
+      return await ctx.db
+        .query("referrals")
+        .withIndex("by_referringPhysicianId", (q) =>
+          q.eq("referringPhysicianId", user._id),
+        )
+        .order("desc")
+        .collect();
+    }
+
+    // If admin, return all referrals
+    if (user.role === "admin") {
+      return await ctx.db.query("referrals").order("desc").collect();
+    }
+
+    throw new Error("Unauthorized access");
+  },
+});
+
+// ============= ADMIN SPECIFIC QUERIES =============
+
+// Get pending referrals for admin (WITH physician data)
+export const getPendingReferralsAdmin = query({
+  args: {
+    adminToken: v.string(),
+  },
+  handler: async (ctx, args): Promise<any[]> => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", args.adminToken))
+      .first();
+
+    if (!session) {
+      throw new Error("Unauthorized");
+    }
+
+    const user = await ctx.db.get(session.userId);
+    if (!user || user.role !== "admin") {
+      throw new Error("Admin access required");
+    }
+
+    const pendingReferrals = await ctx.db
+      .query("referrals")
+      .withIndex("by_status", (q) => q.eq("status", "pending"))
+      .order("desc")
+      .collect();
+
+    // Enrich with physician data
+    return await Promise.all(
+      pendingReferrals.map(async (referral) => {
+        const physician = await ctx.db.get(referral.referringPhysicianId);
+        return {
+          ...referral,
+          referringPhysicianName: physician?.name,
+          referringHospital: physician?.hospital,
+        };
+      }),
+    );
   },
 });
