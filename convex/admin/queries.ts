@@ -86,49 +86,37 @@ export const getAllPhysicians = query({
       .first();
 
     if (!session) {
+      console.log("No session found for token:", args.adminToken);
       throw new Error("Unauthorized");
     }
 
     const admin = await ctx.db.get(session.userId);
     if (!admin || admin.role !== "admin") {
+      console.log("User is not admin:", admin?.role);
       throw new Error("Admin access required");
     }
 
-    let profiles: Doc<"physicianProfiles">[];
+    // Get all physician profiles
+    let profiles: Doc<"physicianProfiles">[] = await ctx.db
+      .query("physicianProfiles")
+      .collect();
+    console.log("Raw physician profiles found:", profiles.length);
 
-    // Build query based on filters
-    if (args.facilityId && args.specialization && args.isActive !== undefined) {
-      // Multiple filters - need to collect all and filter manually
-      profiles = await ctx.db.query("physicianProfiles").collect();
+    // Apply filters
+    if (args.facilityId) {
+      profiles = profiles.filter((p) => p.facilityId === args.facilityId);
+    }
+    if (args.specialization) {
       profiles = profiles.filter(
-        (p) =>
-          p.facilityId === args.facilityId &&
-          p.specialization === args.specialization &&
-          p.isActive === args.isActive,
+        (p) => p.specialization === args.specialization,
       );
-    } else if (args.facilityId) {
-      profiles = await ctx.db
-        .query("physicianProfiles")
-        .withIndex("by_facilityId", (q) => q.eq("facilityId", args.facilityId!))
-        .collect();
-    } else if (args.specialization) {
-      profiles = await ctx.db
-        .query("physicianProfiles")
-        .withIndex("by_specialization", (q) =>
-          q.eq("specialization", args.specialization!),
-        )
-        .collect();
-    } else if (args.isActive !== undefined) {
-      profiles = await ctx.db
-        .query("physicianProfiles")
-        .withIndex("by_isActive", (q) => q.eq("isActive", args.isActive!))
-        .collect();
-    } else {
-      profiles = await ctx.db.query("physicianProfiles").collect();
+    }
+    if (args.isActive !== undefined) {
+      profiles = profiles.filter((p) => p.isActive === args.isActive);
     }
 
     // Enrich with user and facility data
-    return await Promise.all(
+    const enrichedProfiles = await Promise.all(
       profiles.map(async (profile) => {
         const user = await ctx.db.get(profile.userId);
         const facility = await ctx.db.get(profile.facilityId);
@@ -140,9 +128,12 @@ export const getAllPhysicians = query({
             phoneNumber: user?.phoneNumber,
           },
           facilityName: facility?.name,
+          facilityCity: facility?.city,
         };
       }),
     );
+
+    return enrichedProfiles;
   },
 });
 
@@ -176,6 +167,15 @@ export const getDashboardStats = query({
     // Get all referrals
     const referrals = await ctx.db.query("referrals").collect();
 
+    // Get users with physician role
+    const physicianUsers = await ctx.db
+      .query("users")
+      .withIndex("by_role", (q) => q.eq("role", "physician"))
+      .collect();
+
+    // Get physician profiles
+    const physicianProfiles = await ctx.db.query("physicianProfiles").collect();
+
     // Filter this month's referrals
     const thisMonthReferrals = referrals.filter(
       (r) => r.createdAt >= firstDayOfMonth,
@@ -199,9 +199,10 @@ export const getDashboardStats = query({
     ).length;
 
     // Get physician stats
-    const physicians = await ctx.db.query("physicianProfiles").collect();
-    const activePhysicians = physicians.filter((p) => p.isActive).length;
-    const pendingVerification = physicians.filter((p) => !p.verifiedAt).length;
+    const activePhysicians = physicianProfiles.filter((p) => p.isActive).length;
+    const pendingVerification = physicianProfiles.filter(
+      (p) => !p.verifiedAt,
+    ).length;
 
     return {
       referrals: {
@@ -221,9 +222,10 @@ export const getDashboardStats = query({
         pending: pendingFacilities,
       },
       physicians: {
-        total: physicians.length,
+        total: physicianProfiles.length,
         active: activePhysicians,
         pendingVerification,
+        userCount: physicianUsers.length, // For reference
       },
     };
   },

@@ -8,11 +8,12 @@ import NotificationBell from "../notifications/notification-bell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import PendingPhysicianReferrals from "./pending-physician-referrals";
 import AdminReferrals from "./AdminReferrals";
+import PendingPhysicianReferrals from "./pending-physician-referrals";
 import CalendarView from "./calendar-view";
 import FacilityManagement from "./FacilityManagement";
 import PhysicianManagement from "./PhysicianManagement";
+import PhysicianList from "./PhysicianList";
 import {
   LayoutDashboard,
   FileText,
@@ -32,15 +33,11 @@ import {
   ChevronDown,
   Settings,
   HelpCircle,
-  Moon,
-  Sun,
   Bell,
-  Search,
-  Filter,
-  Download,
-  RefreshCw,
-  CheckCheck,
-  AlertCircle,
+  Users2,
+  UserPlus,
+  UserCog,
+  List,
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -56,6 +53,7 @@ type AdminView =
   | "physicians";
 
 type ReferralsSubTab = "all" | "pending";
+type PhysiciansSubTab = "manage" | "list";
 
 export default function AdminDashboard({
   user,
@@ -64,10 +62,11 @@ export default function AdminDashboard({
   const [currentView, setCurrentView] = useState<AdminView>("overview");
   const [referralsSubTab, setReferralsSubTab] =
     useState<ReferralsSubTab>("all");
+  const [physiciansSubTab, setPhysiciansSubTab] =
+    useState<PhysiciansSubTab>("list");
   const [stats, setStats] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const { token } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
@@ -118,11 +117,6 @@ export default function AdminDashboard({
       count: stats?.physicians.pendingVerification,
     },
   ];
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    // Implement dark mode logic here
-  };
 
   const renderContent = () => {
     switch (currentView) {
@@ -333,7 +327,52 @@ export default function AdminDashboard({
         return <FacilityManagement adminUser={user} token={token || ""} />;
 
       case "physicians":
-        return <PhysicianManagement adminUser={user} token={token || ""} />;
+        return (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-4 sm:space-y-6"
+          >
+            {/* Physician Sub-tabs */}
+            <div className="flex gap-2 border-b border-gray-200 pb-2 overflow-x-auto scrollbar-hide">
+              <Button
+                onClick={() => setPhysiciansSubTab("list")}
+                variant={physiciansSubTab === "list" ? "default" : "ghost"}
+                className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm whitespace-nowrap ${
+                  physiciansSubTab === "list"
+                    ? "bg-purple-500 text-white"
+                    : "text-gray-600 hover:text-purple-600"
+                }`}
+              >
+                <List className="w-3 h-3 sm:w-4 sm:h-4" />
+                View Physicians
+                <span className="ml-1 px-1.5 py-0.5 bg-white text-purple-600 rounded-full text-[10px] sm:text-xs font-medium">
+                  {stats?.physicians.total || 0}
+                </span>
+              </Button>
+              <Button
+                onClick={() => setPhysiciansSubTab("manage")}
+                variant={physiciansSubTab === "manage" ? "default" : "ghost"}
+                className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm whitespace-nowrap ${
+                  physiciansSubTab === "manage"
+                    ? "bg-blue-500 text-white"
+                    : "text-gray-600 hover:text-blue-600"
+                }`}
+              >
+                <UserCog className="w-3 h-3 sm:w-4 sm:h-4" />
+                Manage Physicians
+              </Button>
+            </div>
+
+            {/* Sub-tab content */}
+            {physiciansSubTab === "list" ? (
+              <PhysicianList adminUser={user} token={token || ""} />
+            ) : (
+              <PhysicianManagement adminUser={user} token={token || ""} />
+            )}
+          </motion.div>
+        );
 
       default:
         return null;
@@ -376,19 +415,6 @@ export default function AdminDashboard({
             <div className="flex items-center gap-1 sm:gap-3">
               {/* Notification Bell */}
               <NotificationBell userId={user?.id} />
-
-              {/* Dark mode toggle (optional) */}
-              <button
-                onClick={toggleDarkMode}
-                className="hidden sm:flex p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label="Toggle dark mode"
-              >
-                {isDarkMode ? (
-                  <Sun className="w-5 h-5 text-gray-600" />
-                ) : (
-                  <Moon className="w-5 h-5 text-gray-600" />
-                )}
-              </button>
 
               {/* Profile Menu */}
               <div className="relative" ref={profileMenuRef}>
