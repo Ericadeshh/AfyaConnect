@@ -26,8 +26,11 @@ export const storeUser = mutation({
       v.literal("patient"),
     ),
     phoneNumber: v.optional(v.string()),
+    // Physician fields
+    hospital: v.optional(v.string()),
     specialization: v.optional(v.string()),
     licenseNumber: v.optional(v.string()),
+    // Patient fields
     dateOfBirth: v.optional(v.string()),
     bloodGroup: v.optional(v.string()),
   },
@@ -53,8 +56,11 @@ export const storeUser = mutation({
       updatedAt: now,
       isActive: true,
       phoneNumber: args.phoneNumber,
+      // Physician fields
+      hospital: args.hospital,
       specialization: args.specialization,
       licenseNumber: args.licenseNumber,
+      // Patient fields
       dateOfBirth: args.dateOfBirth,
       bloodGroup: args.bloodGroup,
     });

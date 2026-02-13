@@ -3,49 +3,37 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import AdminDashboard from "@/components/admin/AdminDashboard";
 
-export default function AdminDashboard() {
-  const { user, isLoading } = useAuth();
+export default function AdminDashboardPage() {
+  const { user, isLoading, signOut } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!isLoading && (!user || user.role !== "admin")) {
-      router.push("/login");
+      router.push("/login?role=admin");
     }
   }, [user, isLoading, router]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   if (!user || user.role !== "admin") {
     return null;
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-      <div className="bg-white shadow rounded-lg p-6">
-        <p className="text-lg mb-4">Welcome, {user.name}!</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">User Management</h3>
-            <p className="text-sm text-gray-600">
-              Manage patients and physicians
-            </p>
-          </div>
-          <div className="bg-green-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">System Settings</h3>
-            <p className="text-sm text-gray-600">Configure system parameters</p>
-          </div>
-          <div className="bg-purple-50 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">Analytics</h3>
-            <p className="text-sm text-gray-600">
-              View system usage statistics
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  // Transform user data to match the expected format in AdminDashboard
+  const adminUser = {
+    id: user._id,
+    fullName: user.name,
+    email: user.email,
+    role: user.role,
+  };
+
+  return <AdminDashboard user={adminUser} onLogout={signOut} />;
 }

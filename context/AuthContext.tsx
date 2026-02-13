@@ -14,6 +14,13 @@ interface User {
   email: string;
   name: string;
   role: "admin" | "physician" | "patient";
+  // Optional fields that might exist based on role
+  phoneNumber?: string;
+  specialization?: string; // For physicians
+  licenseNumber?: string; // For physicians
+  dateOfBirth?: string; // For patients
+  bloodGroup?: string; // For patients
+  hospital?: string; // For physicians (if you have this field)
 }
 
 interface AuthContextType {
@@ -35,6 +42,7 @@ interface SignUpData {
   licenseNumber?: string;
   dateOfBirth?: string;
   bloodGroup?: string;
+  hospital?: string; // Add this if physicians have a hospital field
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

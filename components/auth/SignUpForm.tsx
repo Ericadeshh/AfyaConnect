@@ -18,6 +18,7 @@ export function SignUpForm() {
     role: defaultRole,
     phoneNumber: "",
     // Physician fields
+    hospital: "",
     specialization: "",
     licenseNumber: "",
     // Patient fields
@@ -42,11 +43,13 @@ export function SignUpForm() {
     e.preventDefault();
     setError("");
 
+    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
+    // Validate password strength
     if (formData.password.length < 8) {
       setError("Password must be at least 8 characters long");
       return;
@@ -55,6 +58,7 @@ export function SignUpForm() {
     setIsLoading(true);
 
     try {
+      // Prepare data based on role
       const userData: any = {
         email: formData.email,
         password: formData.password,
@@ -63,7 +67,9 @@ export function SignUpForm() {
         phoneNumber: formData.phoneNumber || undefined,
       };
 
+      // Add role-specific fields
       if (formData.role === "physician") {
+        userData.hospital = formData.hospital;
         userData.specialization = formData.specialization;
         userData.licenseNumber = formData.licenseNumber;
       } else if (formData.role === "patient") {
@@ -160,8 +166,27 @@ export function SignUpForm() {
         </select>
       </div>
 
+      {/* Physician-specific fields */}
       {formData.role === "physician" && (
         <>
+          <div>
+            <label
+              htmlFor="hospital"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Hospital/Institution
+            </label>
+            <input
+              id="hospital"
+              name="hospital"
+              type="text"
+              required
+              value={formData.hospital}
+              onChange={handleChange}
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
           <div>
             <label
               htmlFor="specialization"
@@ -200,6 +225,7 @@ export function SignUpForm() {
         </>
       )}
 
+      {/* Patient-specific fields */}
       {formData.role === "patient" && (
         <>
           <div>
