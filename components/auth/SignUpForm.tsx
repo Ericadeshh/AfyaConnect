@@ -174,7 +174,7 @@ export function SignUpForm() {
               htmlFor="hospital"
               className="block text-sm font-medium text-gray-700"
             >
-              Hospital/Institution
+              Hospital/Institution *
             </label>
             <input
               id="hospital"
@@ -192,7 +192,7 @@ export function SignUpForm() {
               htmlFor="specialization"
               className="block text-sm font-medium text-gray-700"
             >
-              Specialization
+              Specialization *
             </label>
             <input
               id="specialization"
@@ -210,7 +210,7 @@ export function SignUpForm() {
               htmlFor="licenseNumber"
               className="block text-sm font-medium text-gray-700"
             >
-              License Number
+              License Number *
             </label>
             <input
               id="licenseNumber"
@@ -233,7 +233,7 @@ export function SignUpForm() {
               htmlFor="dateOfBirth"
               className="block text-sm font-medium text-gray-700"
             >
-              Date of Birth
+              Date of Birth *
             </label>
             <input
               id="dateOfBirth"

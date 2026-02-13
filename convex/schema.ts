@@ -16,7 +16,7 @@ export default defineSchema({
   // Users table for authentication
   users: defineTable({
     email: v.string(),
-    password: v.string(), // This will be hashed
+    password: v.string(),
     name: v.string(),
     role: v.union(
       v.literal("admin"),
@@ -53,4 +53,73 @@ export default defineSchema({
     .index("by_token", ["token"])
     .index("by_userId", ["userId"])
     .index("by_expiresAt", ["expiresAt"]),
+
+  // Referrals table
+  referrals: defineTable({
+    // Patient Information
+    patientName: v.string(),
+    patientAge: v.number(),
+    patientGender: v.string(),
+    patientContact: v.string(),
+
+    // Referral Details
+    referringPhysicianId: v.id("users"),
+    referringPhysicianName: v.string(),
+    referringHospital: v.string(),
+
+    // Medical Information
+    diagnosis: v.string(),
+    clinicalSummary: v.string(),
+    reasonForReferral: v.string(),
+    urgency: v.union(
+      v.literal("routine"),
+      v.literal("urgent"),
+      v.literal("emergency"),
+    ),
+
+    // Facility Information
+    referredToFacility: v.string(),
+    referredToDepartment: v.optional(v.string()),
+    referredToPhysician: v.optional(v.string()),
+
+    // Status Tracking
+    status: v.union(
+      v.literal("pending"),
+      v.literal("approved"),
+      v.literal("forwarded"),
+      v.literal("completed"),
+      v.literal("rejected"),
+      v.literal("cancelled"),
+    ),
+
+    // Timestamps
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    submittedAt: v.string(),
+    approvedAt: v.optional(v.string()),
+    forwardedAt: v.optional(v.string()),
+    completedAt: v.optional(v.string()),
+
+    // Admin Actions
+    approvedBy: v.optional(v.id("users")),
+    adminNotes: v.optional(v.string()),
+
+    // Documents/Attachments (optional)
+    attachments: v.optional(v.array(v.string())),
+
+    // Additional Notes
+    physicianNotes: v.optional(v.string()),
+
+    // Tracking
+    referralNumber: v.string(),
+  })
+    .index("by_referringPhysicianId", ["referringPhysicianId"])
+    .index("by_status", ["status"])
+    .index("by_urgency", ["urgency"])
+    .index("by_createdAt", ["createdAt"])
+    .index("by_referringPhysicianId_and_status", [
+      "referringPhysicianId",
+      "status",
+    ])
+    .index("by_referralNumber", ["referralNumber"]),
 });

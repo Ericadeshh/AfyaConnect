@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import CreateReferralPage from "./create-referral";
 import PendingReferralsPage from "./pending-referrals";
 import CompletedReferralsPage from "./completed-referrals";
+import { useAuth } from "@/context/AuthContext";
 
 interface PhysicianDashboardProps {
   user: any;
@@ -19,13 +20,14 @@ export default function PhysicianDashboard({
   onLogout,
 }: PhysicianDashboardProps) {
   const [currentPage, setCurrentPage] = useState<PhysicianPage>("dashboard");
+  const { token } = useAuth();
 
   if (currentPage === "create") {
     return (
       <CreateReferralPage
         physician={user}
         onBack={() => setCurrentPage("dashboard")}
-        token={""}
+        token={token || ""}
       />
     );
   }
@@ -35,7 +37,7 @@ export default function PhysicianDashboard({
       <PendingReferralsPage
         physician={user}
         onBack={() => setCurrentPage("dashboard")}
-        token={""}
+        token={token || ""}
       />
     );
   }
@@ -45,13 +47,13 @@ export default function PhysicianDashboard({
       <CompletedReferralsPage
         physician={user}
         onBack={() => setCurrentPage("dashboard")}
-        token={""}
+        token={token || ""}
       />
     );
   }
 
   return (
-    <div className="bg-linear-to-br from-blue-50 to-blue-100 p-6">
+    <div className="bg-linear-to-br from-blue-50 to-blue-100 p-6 min-h-screen">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-start mb-8">

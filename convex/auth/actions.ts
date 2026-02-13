@@ -3,7 +3,7 @@
 import { v } from "convex/values";
 import { action } from "../_generated/server";
 import { api } from "../_generated/api";
-import { Doc } from "../_generated/dataModel";
+import { Id } from "../_generated/dataModel";
 import crypto from "crypto";
 
 // Type definitions for return values
@@ -19,12 +19,17 @@ interface AuthResult {
 }
 
 interface UserWithPassword {
-  _id: string;
+  _id: Id<"users">; // Change this to Id type
   email: string;
   password: string;
   name: string;
   role: "admin" | "physician" | "patient";
-  [key: string]: any; // For other fields
+  hospital?: string;
+  specialization?: string;
+  licenseNumber?: string;
+  dateOfBirth?: string;
+  bloodGroup?: string;
+  phoneNumber?: string;
 }
 
 // Password hashing function using Node.js crypto
@@ -65,12 +70,17 @@ export const signUpWithCrypto = action({
       v.literal("patient"),
     ),
     phoneNumber: v.optional(v.string()),
+    // Physician fields
+    hospital: v.optional(v.string()),
     specialization: v.optional(v.string()),
     licenseNumber: v.optional(v.string()),
+    // Patient fields
     dateOfBirth: v.optional(v.string()),
     bloodGroup: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<AuthResult> => {
+    console.log("SignUp action started for:", args.email);
+
     // Hash password using Node.js crypto
     const { salt, hash } = hashPassword(args.password);
     const hashedPassword = `${salt}:${hash}`;
@@ -82,12 +92,16 @@ export const signUpWithCrypto = action({
       name: args.name,
       role: args.role,
       phoneNumber: args.phoneNumber,
+      // Physician fields
+      hospital: args.hospital,
       specialization: args.specialization,
       licenseNumber: args.licenseNumber,
+      // Patient fields
       dateOfBirth: args.dateOfBirth,
       bloodGroup: args.bloodGroup,
     });
 
+    console.log("SignUp action result:", result);
     return result as AuthResult;
   },
 });
@@ -104,7 +118,9 @@ export const signInWithCrypto = action({
     ),
   },
   handler: async (ctx, args): Promise<AuthResult> => {
-    // Get user from database
+    console.log("SignIn action started for:", args.email);
+
+    // Get user from database - type assertion to ensure proper Id type
     const user = (await ctx.runQuery(api.auth.queries.getUserByEmailAndRole, {
       email: args.email,
       role: args.role,
@@ -122,14 +138,15 @@ export const signInWithCrypto = action({
       throw new Error("Invalid credentials");
     }
 
-    // Call mutation to handle successful login
+    // Call mutation to handle successful login - user._id is already Id<"users">
     const result = await ctx.runMutation(
       api.auth.mutations.handleSuccessfulLogin,
       {
-        userId: user._id as any, // Convert to Id<"users"> type
+        userId: user._id, // This is now properly typed as Id<"users">
       },
     );
 
+    console.log("SignIn action result:", result);
     return result as AuthResult;
   },
 });

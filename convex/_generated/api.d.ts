@@ -13,6 +13,9 @@ import type * as auth_actions from "../auth/actions.js";
 import type * as auth_mutations from "../auth/mutations.js";
 import type * as auth_queries from "../auth/queries.js";
 import type * as functions_ai_summaries from "../functions/ai_summaries.js";
+import type * as referrals_mutations from "../referrals/mutations.js";
+import type * as referrals_queries from "../referrals/queries.js";
+import type * as referrals_utils from "../referrals/utils.js";
 
 import type {
   ApiFromModules,
@@ -26,6 +29,9 @@ declare const fullApi: ApiFromModules<{
   "auth/mutations": typeof auth_mutations;
   "auth/queries": typeof auth_queries;
   "functions/ai_summaries": typeof functions_ai_summaries;
+  "referrals/mutations": typeof referrals_mutations;
+  "referrals/queries": typeof referrals_queries;
+  "referrals/utils": typeof referrals_utils;
 }>;
 
 /**

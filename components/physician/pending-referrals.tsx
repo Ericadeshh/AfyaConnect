@@ -1,257 +1,275 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { db } from "../../lib/db";
+import { format } from "date-fns";
 
-interface PendingReferralsProps {
+interface PendingReferralsPageProps {
   physician: any;
-  token: string;
   onBack: () => void;
+  token: string;
 }
 
 export default function PendingReferralsPage({
   physician,
-  token,
   onBack,
-}: PendingReferralsProps) {
+  token,
+}: PendingReferralsPageProps) {
   const [selectedReferral, setSelectedReferral] = useState<any>(null);
-  const [tick, setTick] = useState(0);
+  const [showDetails, setShowDetails] = useState(false);
+  const [cancellingId, setCancellingId] = useState<Id<"referrals"> | null>(
+    null,
+  );
 
-  useEffect(() => {
-    const handler = () => setTick((t) => t + 1);
-    if (typeof window !== "undefined") {
-      window.addEventListener("referral:created", handler as EventListener);
-      window.addEventListener("referral:completed", handler as EventListener);
+  // Fetch pending referrals
+  const pendingReferrals = useQuery(api.referrals.queries.getPendingReferrals, {
+    token,
+    physicianId: physician.id,
+  });
+
+  const cancelReferral = useMutation(api.referrals.mutations.cancelReferral);
+
+  const handleCancel = async (referralId: Id<"referrals">) => {
+    if (!confirm("Are you sure you want to cancel this referral?")) {
+      return;
     }
-    return () => {
-      if (typeof window !== "undefined") {
-        window.removeEventListener(
-          "referral:created",
-          handler as EventListener,
-        );
-        window.removeEventListener(
-          "referral:completed",
-          handler as EventListener,
-        );
-      }
-    };
-  }, []);
 
-  const pendingReferrals = useMemo(() => {
-    return Array.from(db.referrals.values()).filter((ref: any) => {
-      if (ref.physicianId !== physician.id) return false;
-      const s = (ref.status || "").toString().toLowerCase();
-      return (
-        s === "pending-admin" ||
-        s === "pending admin approval" ||
-        s === "pending-payment" ||
-        s === "awaiting-biodata" ||
-        s === "awaiting biodata"
-      );
-    });
-  }, [physician.id, tick]);
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "Routine":
-        return "bg-green-100 text-green-800";
-      case "Urgent":
-        return "bg-yellow-100 text-yellow-800";
-      case "Emergency":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+    setCancellingId(referralId);
+    try {
+      await cancelReferral({
+        token,
+        physicianId: physician.id,
+        referralId,
+        cancellationReason: "Cancelled by physician",
+      });
+      // Refresh will happen automatically via Convex
+    } catch (error) {
+      console.error("Error cancelling referral:", error);
+      alert("Failed to cancel referral");
+    } finally {
+      setCancellingId(null);
     }
   };
 
+  const getUrgencyColor = (urgency: string) => {
+    switch (urgency) {
+      case "emergency":
+        return "text-red-600 bg-red-50";
+      case "urgent":
+        return "text-orange-600 bg-orange-50";
+      default:
+        return "text-blue-600 bg-blue-50";
+    }
+  };
+
+  if (showDetails && selectedReferral) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <Button onClick={() => setShowDetails(false)} variant="outline">
+              ← Back to List
+            </Button>
+            <h1 className="text-2xl font-bold text-primary">
+              Referral Details
+            </h1>
+            <div className="w-20"></div>
+          </div>
+
+          <Card className="p-6">
+            <div className="space-y-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-xl font-semibold">
+                    Referral #{selectedReferral.referralNumber}
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Submitted:{" "}
+                    {format(new Date(selectedReferral.submittedAt), "PPP")}
+                  </p>
+                </div>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${getUrgencyColor(selectedReferral.urgency)}`}
+                >
+                  {selectedReferral.urgency.charAt(0).toUpperCase() +
+                    selectedReferral.urgency.slice(1)}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <h3 className="font-semibold mb-2">Patient Information</h3>
+                  <p>
+                    <span className="text-gray-600">Name:</span>{" "}
+                    {selectedReferral.patientName}
+                  </p>
+                  <p>
+                    <span className="text-gray-600">Age:</span>{" "}
+                    {selectedReferral.patientAge}
+                  </p>
+                  <p>
+                    <span className="text-gray-600">Gender:</span>{" "}
+                    {selectedReferral.patientGender}
+                  </p>
+                  <p>
+                    <span className="text-gray-600">Contact:</span>{" "}
+                    {selectedReferral.patientContact}
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-2">Receiving Facility</h3>
+                  <p>
+                    <span className="text-gray-600">Facility:</span>{" "}
+                    {selectedReferral.referredToFacility}
+                  </p>
+                  {selectedReferral.referredToDepartment && (
+                    <p>
+                      <span className="text-gray-600">Department:</span>{" "}
+                      {selectedReferral.referredToDepartment}
+                    </p>
+                  )}
+                  {selectedReferral.referredToPhysician && (
+                    <p>
+                      <span className="text-gray-600">Physician:</span>{" "}
+                      {selectedReferral.referredToPhysician}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Medical Information</h3>
+                <p>
+                  <span className="text-gray-600">Diagnosis:</span>{" "}
+                  {selectedReferral.diagnosis}
+                </p>
+                <p>
+                  <span className="text-gray-600">Clinical Summary:</span>{" "}
+                  {selectedReferral.clinicalSummary}
+                </p>
+                <p>
+                  <span className="text-gray-600">Reason for Referral:</span>{" "}
+                  {selectedReferral.reasonForReferral}
+                </p>
+              </div>
+
+              {selectedReferral.physicianNotes && (
+                <div>
+                  <h3 className="font-semibold mb-2">Physician Notes</h3>
+                  <p className="text-gray-700">
+                    {selectedReferral.physicianNotes}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-3 pt-4 border-t">
+                <Button variant="outline" onClick={() => setShowDetails(false)}>
+                  Close
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    setShowDetails(false);
+                    handleCancel(selectedReferral._id);
+                  }}
+                  disabled={cancellingId === selectedReferral._id}
+                >
+                  {cancellingId === selectedReferral._id
+                    ? "Cancelling..."
+                    : "Cancel Referral"}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 to-blue-100 p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-primary">Pending Referrals</h1>
+        <div className="flex items-center justify-between mb-6">
           <Button onClick={onBack} variant="outline">
-            Back to Dashboard
+            ← Back to Dashboard
           </Button>
+          <h1 className="text-2xl font-bold text-primary">Pending Referrals</h1>
+          <div className="w-20"></div>
         </div>
 
-        {pendingReferrals.length === 0 ? (
-          <Card className="p-8 text-center">
-            <p className="text-text-secondary text-lg">No pending referrals</p>
+        {pendingReferrals === undefined ? (
+          <div className="text-center py-12">Loading...</div>
+        ) : pendingReferrals.length === 0 ? (
+          <Card className="p-12 text-center">
+            <p className="text-gray-500 text-lg">No pending referrals found</p>
+            <Button
+              onClick={() => onBack()}
+              className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
+            >
+              Create New Referral
+            </Button>
           </Card>
         ) : (
           <div className="space-y-4">
-            {pendingReferrals.map((referral: any) => (
+            {pendingReferrals.map((referral) => (
               <Card
-                key={referral.id}
-                className="p-6 cursor-pointer hover:shadow-lg transition-all"
+                key={referral._id}
+                className="p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex justify-between items-start">
-                  <div className="grow">
-                    <h3 className="text-lg font-bold text-primary mb-2">
-                      {referral.patientName}
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="text-text-secondary">
-                          Referring Hospital
-                        </p>
-                        <p className="font-medium">
-                          {referral.referringHospital}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-text-secondary">
-                          Receiving Facility
-                        </p>
-                        <p className="font-medium">
-                          {referral.receivingFacility}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-text-secondary">Created</p>
-                        <p className="font-medium">
-                          {new Date(referral.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="font-semibold text-lg">
+                        {referral.patientName}
+                      </h3>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getUrgencyColor(referral.urgency)}`}
+                      >
+                        {referral.urgency}
+                      </span>
                     </div>
-                  </div>
-                  <div className="text-right ml-4">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(referral.priority)}`}
-                    >
-                      {referral.priority}
-                    </span>
-                    <p className="text-sm text-yellow-600 font-medium mt-2">
-                      Pending Administration Approval
+                    <p className="text-sm text-gray-600 mb-1">
+                      Referral #{referral.referralNumber}
+                    </p>
+                    <p className="text-sm text-gray-600 mb-2">
+                      To: {referral.referredToFacility}
+                      {referral.referredToDepartment &&
+                        ` - ${referral.referredToDepartment}`}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Submitted: {format(new Date(referral.submittedAt), "PPP")}
                     </p>
                   </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedReferral(referral);
+                        setShowDetails(true);
+                      }}
+                    >
+                      View Details
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() =>
+                        handleCancel(referral._id as Id<"referrals">)
+                      }
+                      disabled={cancellingId === referral._id}
+                    >
+                      {cancellingId === referral._id ? "..." : "Cancel"}
+                    </Button>
+                  </div>
                 </div>
-                <Button
-                  onClick={() => setSelectedReferral(referral)}
-                  className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
-                >
-                  View Details
-                </Button>
               </Card>
             ))}
-          </div>
-        )}
-
-        {selectedReferral && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <Card className="w-full max-w-2xl p-8 max-h-screen overflow-y-auto">
-              <div className="flex justify-between items-start mb-6">
-                <h2 className="text-2xl font-bold text-primary">
-                  Referral Details
-                </h2>
-                <button
-                  onClick={() => setSelectedReferral(null)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-bold text-primary mb-3">
-                    Patient Information
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-text-secondary">
-                        Patient Name
-                      </p>
-                      <p className="font-medium">
-                        {selectedReferral.patientName}
-                      </p>
-                    </div>
-                    {selectedReferral.patientId && (
-                      <div>
-                        <p className="text-sm text-text-secondary">
-                          Patient ID
-                        </p>
-                        <p className="font-medium">
-                          {selectedReferral.patientId}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold text-primary mb-3">
-                    Medical History
-                  </h3>
-                  <p className="text-sm whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">
-                    {selectedReferral.medicalHistory}
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold text-primary mb-3">
-                    Lab Results
-                  </h3>
-                  <p className="text-sm whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">
-                    {selectedReferral.labResults}
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold text-primary mb-3">
-                    Reason for Referral
-                  </h3>
-                  <p className="text-sm whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">
-                    {selectedReferral.diagnosis}
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold text-primary mb-3">
-                    Referral Metadata
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-text-secondary">
-                        Referring Hospital
-                      </p>
-                      <p className="font-medium">
-                        {selectedReferral.referringHospital}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-text-secondary">
-                        Receiving Facility
-                      </p>
-                      <p className="font-medium">
-                        {selectedReferral.receivingFacility}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-text-secondary">Priority</p>
-                      <p className="font-medium">{selectedReferral.priority}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-text-secondary">Status</p>
-                      <p className="font-medium text-yellow-600">
-                        {selectedReferral.status}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t">
-                  <Button
-                    onClick={() => setSelectedReferral(null)}
-                    className="w-full bg-gray-500 hover:bg-gray-600 text-white"
-                  >
-                    Close
-                  </Button>
-                </div>
-              </div>
-            </Card>
           </div>
         )}
       </div>

@@ -1,230 +1,247 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { db } from "../../lib/db";
+import { format } from "date-fns";
 
-interface CompletedReferralsProps {
+interface CompletedReferralsPageProps {
   physician: any;
-  token: string;
   onBack: () => void;
+  token: string;
 }
 
 export default function CompletedReferralsPage({
   physician,
-  token,
   onBack,
-}: CompletedReferralsProps) {
+  token,
+}: CompletedReferralsPageProps) {
   const [selectedReferral, setSelectedReferral] = useState<any>(null);
+  const [showDetails, setShowDetails] = useState(false);
 
-  const completedReferrals = useMemo(() => {
-    return Array.from(db.referrals.values()).filter(
-      (ref: any) =>
-        ref.physicianId === physician.id &&
-        (ref.status === "Completed" ||
-          ref.status === "confirmed" ||
-          ref.status === "paid" ||
-          ref.status === "completed"),
+  // Fetch completed referrals
+  const completedReferrals = useQuery(
+    api.referrals.queries.getCompletedReferrals,
+    {
+      token,
+      physicianId: physician.id,
+    },
+  );
+
+  const getUrgencyColor = (urgency: string) => {
+    switch (urgency) {
+      case "emergency":
+        return "text-red-600 bg-red-50";
+      case "urgent":
+        return "text-orange-600 bg-orange-50";
+      default:
+        return "text-blue-600 bg-blue-50";
+    }
+  };
+
+  if (showDetails && selectedReferral) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <Button onClick={() => setShowDetails(false)} variant="outline">
+              ← Back to List
+            </Button>
+            <h1 className="text-2xl font-bold text-green-600">
+              Completed Referral Details
+            </h1>
+            <div className="w-20"></div>
+          </div>
+
+          <Card className="p-6">
+            <div className="space-y-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h2 className="text-xl font-semibold">
+                    Referral #{selectedReferral.referralNumber}
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Submitted:{" "}
+                    {format(new Date(selectedReferral.submittedAt), "PPP")}
+                  </p>
+                  {selectedReferral.completedAt && (
+                    <p className="text-sm text-green-600">
+                      Completed:{" "}
+                      {format(new Date(selectedReferral.completedAt), "PPP")}
+                    </p>
+                  )}
+                </div>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${getUrgencyColor(selectedReferral.urgency)}`}
+                >
+                  {selectedReferral.urgency.charAt(0).toUpperCase() +
+                    selectedReferral.urgency.slice(1)}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <h3 className="font-semibold mb-2">Patient Information</h3>
+                  <p>
+                    <span className="text-gray-600">Name:</span>{" "}
+                    {selectedReferral.patientName}
+                  </p>
+                  <p>
+                    <span className="text-gray-600">Age:</span>{" "}
+                    {selectedReferral.patientAge}
+                  </p>
+                  <p>
+                    <span className="text-gray-600">Gender:</span>{" "}
+                    {selectedReferral.patientGender}
+                  </p>
+                  <p>
+                    <span className="text-gray-600">Contact:</span>{" "}
+                    {selectedReferral.patientContact}
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold mb-2">Receiving Facility</h3>
+                  <p>
+                    <span className="text-gray-600">Facility:</span>{" "}
+                    {selectedReferral.referredToFacility}
+                  </p>
+                  {selectedReferral.referredToDepartment && (
+                    <p>
+                      <span className="text-gray-600">Department:</span>{" "}
+                      {selectedReferral.referredToDepartment}
+                    </p>
+                  )}
+                  {selectedReferral.referredToPhysician && (
+                    <p>
+                      <span className="text-gray-600">Physician:</span>{" "}
+                      {selectedReferral.referredToPhysician}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Medical Information</h3>
+                <p>
+                  <span className="text-gray-600">Diagnosis:</span>{" "}
+                  {selectedReferral.diagnosis}
+                </p>
+                <p>
+                  <span className="text-gray-600">Clinical Summary:</span>{" "}
+                  {selectedReferral.clinicalSummary}
+                </p>
+                <p>
+                  <span className="text-gray-600">Reason for Referral:</span>{" "}
+                  {selectedReferral.reasonForReferral}
+                </p>
+              </div>
+
+              {selectedReferral.physicianNotes && (
+                <div>
+                  <h3 className="font-semibold mb-2">Physician Notes</h3>
+                  <p className="text-gray-700">
+                    {selectedReferral.physicianNotes}
+                  </p>
+                </div>
+              )}
+
+              {selectedReferral.adminNotes && (
+                <div>
+                  <h3 className="font-semibold mb-2">Admin Notes</h3>
+                  <p className="text-gray-700">{selectedReferral.adminNotes}</p>
+                </div>
+              )}
+
+              <div className="flex justify-end pt-4 border-t">
+                <Button variant="outline" onClick={() => setShowDetails(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
     );
-  }, [physician.id]);
+  }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 to-blue-100 p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-primary">
+        <div className="flex items-center justify-between mb-6">
+          <Button onClick={onBack} variant="outline">
+            ← Back to Dashboard
+          </Button>
+          <h1 className="text-2xl font-bold text-green-600">
             Completed Referrals
           </h1>
-          <Button onClick={onBack} variant="outline">
-            Back to Dashboard
-          </Button>
+          <div className="w-20"></div>
         </div>
 
-        {completedReferrals.length === 0 ? (
-          <Card className="p-8 text-center">
-            <p className="text-text-secondary text-lg">
-              No completed referrals yet
+        {completedReferrals === undefined ? (
+          <div className="text-center py-12">Loading...</div>
+        ) : completedReferrals.length === 0 ? (
+          <Card className="p-12 text-center">
+            <p className="text-gray-500 text-lg">
+              No completed referrals found
             </p>
           </Card>
         ) : (
           <div className="space-y-4">
-            {completedReferrals.map((referral: any) => (
+            {completedReferrals.map((referral) => (
               <Card
-                key={referral.id}
-                className="p-6 cursor-pointer hover:shadow-lg transition-all border-l-4 border-green-500"
+                key={referral._id}
+                className="p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex justify-between items-start">
-                  <div className="grow">
-                    <h3 className="text-lg font-bold text-primary mb-2">
-                      {referral.patientName}
-                    </h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="text-text-secondary">Referring Doctor</p>
-                        <p className="font-medium">{physician.fullName}</p>
-                      </div>
-                      <div>
-                        <p className="text-text-secondary">
-                          Receiving Facility
-                        </p>
-                        <p className="font-medium">
-                          {referral.receivingFacility}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-text-secondary">Date Sent</p>
-                        <p className="font-medium">
-                          {new Date(referral.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="font-semibold text-lg">
+                        {referral.patientName}
+                      </h3>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getUrgencyColor(referral.urgency)}`}
+                      >
+                        {referral.urgency}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mb-1">
+                      Referral #{referral.referralNumber}
+                    </p>
+                    <p className="text-sm text-gray-600 mb-2">
+                      To: {referral.referredToFacility}
+                      {referral.referredToDepartment &&
+                        ` - ${referral.referredToDepartment}`}
+                    </p>
+                    <div className="flex gap-4 text-sm text-gray-500">
+                      <span>
+                        Submitted:{" "}
+                        {format(new Date(referral.submittedAt), "PPP")}
+                      </span>
                       {referral.completedAt && (
-                        <div>
-                          <p className="text-text-secondary">Date Completed</p>
-                          <p className="font-medium">
-                            {new Date(
-                              referral.completedAt,
-                            ).toLocaleDateString()}
-                          </p>
-                        </div>
+                        <span>
+                          Completed:{" "}
+                          {format(new Date(referral.completedAt), "PPP")}
+                        </span>
                       )}
                     </div>
                   </div>
-                  <div className="text-right ml-4">
-                    <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                      {referral.status === "paid" ? "Paid" : "Completed"}
-                    </span>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => setSelectedReferral(referral)}
-                  className="mt-4 bg-green-500 hover:bg-green-600 text-white"
-                >
-                  View Full Details
-                </Button>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {selectedReferral && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <Card className="w-full max-w-2xl p-8 max-h-screen overflow-y-auto">
-              <div className="flex justify-between items-start mb-6">
-                <h2 className="text-2xl font-bold text-primary">
-                  Referral Details
-                </h2>
-                <button
-                  onClick={() => setSelectedReferral(null)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-bold text-primary mb-3">
-                    Patient Information
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-text-secondary">
-                        Patient Name
-                      </p>
-                      <p className="font-medium">
-                        {selectedReferral.patientName}
-                      </p>
-                    </div>
-                    {selectedReferral.patientId && (
-                      <div>
-                        <p className="text-sm text-text-secondary">
-                          Patient ID
-                        </p>
-                        <p className="font-medium">
-                          {selectedReferral.patientId}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold text-primary mb-3">
-                    Medical History
-                  </h3>
-                  <p className="text-sm whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">
-                    {selectedReferral.medicalHistory}
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold text-primary mb-3">
-                    Test Results
-                  </h3>
-                  <p className="text-sm whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">
-                    {selectedReferral.labResults}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-primary mb-3">
-                    Reason for Referral
-                  </h3>
-                  <p className="text-sm whitespace-pre-wrap bg-gray-50 p-4 rounded-lg">
-                    {selectedReferral.diagnosis}
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold text-primary mb-3">
-                    Referral Status
-                  </h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-text-secondary">
-                        Receiving Facility
-                      </p>
-                      <p className="font-medium">
-                        {selectedReferral.receivingFacility}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-text-secondary">Status</p>
-                      <p className="font-medium text-green-600">Completed</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-text-secondary">Date Sent</p>
-                      <p className="font-medium">
-                        {new Date(
-                          selectedReferral.createdAt,
-                        ).toLocaleDateString()}
-                      </p>
-                    </div>
-                    {selectedReferral.completedAt && (
-                      <div>
-                        <p className="text-sm text-text-secondary">
-                          Date Completed
-                        </p>
-                        <p className="font-medium">
-                          {new Date(
-                            selectedReferral.completedAt,
-                          ).toLocaleDateString()}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t">
                   <Button
-                    onClick={() => setSelectedReferral(null)}
-                    className="w-full bg-gray-500 hover:bg-gray-600 text-white"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedReferral(referral);
+                      setShowDetails(true);
+                    }}
                   >
-                    Close
+                    View Details
                   </Button>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            ))}
           </div>
         )}
       </div>
