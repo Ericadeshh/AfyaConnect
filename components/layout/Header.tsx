@@ -4,10 +4,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
 import { useState } from "react";
-import { useConvexAuth } from "convex/react";
-import { useAuthActions } from "@convex-dev/auth/react";
+import { useAuth } from "@/context/AuthContext";
 
 const navItems = [
   { label: "Home", href: "/" },
@@ -24,21 +23,36 @@ export default function Header() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  const { signOut } = useAuthActions();
+  // Use our custom auth hook instead of useConvexAuth
+  const { user, isLoading, signOut } = useAuth();
 
   const isActive = (href: string) => {
     if (href.startsWith("#")) return false;
     return pathname === href || pathname.startsWith(href);
   };
 
+  // Get dashboard URL based on user role
+  const getDashboardUrl = () => {
+    if (!user) return "/dashboard";
+    switch (user.role) {
+      case "admin":
+        return "/dashboard/admin";
+      case "physician":
+        return "/dashboard/physician";
+      case "patient":
+        return "/dashboard/patient";
+      default:
+        return "/dashboard";
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-lg supports-backdrop-filter:bg-background/60 transition-all duration-300">
       <div className="container mx-auto px-4 flex h-16 items-center justify-between">
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center space-x-2 font-bold text-xl tracking-tight"
+          className="flex items-center space-x-2 font-bold text-xl tracking-tight transition-transform hover:scale-105 duration-300"
         >
           <span className="text-primary">UZIMA</span>
           <span className="text-foreground">CARE</span>
@@ -51,9 +65,9 @@ export default function Header() {
               key={item.href}
               href={item.href}
               className={cn(
-                "text-sm font-medium transition-colors hover:text-primary",
+                "text-sm font-medium transition-all duration-300 hover:text-primary hover:scale-105",
                 isActive(item.href)
-                  ? "text-primary font-semibold"
+                  ? "text-primary font-semibold scale-105"
                   : "text-muted-foreground",
               )}
               onClick={() => {
@@ -71,46 +85,58 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
+
+          {/* UzimaCare AI link */}
+          <Link
+            href="/dashboard/ai-dashboard"
+            className="text-sm font-medium flex items-center gap-1.5 text-primary hover:text-primary/80 transition-all duration-300 hover:scale-105"
+          >
+            <Sparkles className="h-4 w-4" />
+            UzimaCare AI
+          </Link>
         </nav>
 
         {/* Auth / CTA Buttons – Desktop */}
         <div className="hidden md:flex items-center gap-4">
           {isLoading ? (
-            <span className="text-sm text-muted-foreground">Loading...</span>
-          ) : isAuthenticated ? (
+            <span className="text-sm text-muted-foreground animate-pulse">
+              Loading...
+            </span>
+          ) : user ? (
             <>
-              <Link href="/dashboard">
-                <Button size="sm" className="bg-primary hover:bg-primary/90">
+              <Link href={getDashboardUrl()}>
+                <Button
+                  size="sm"
+                  className="bg-primary hover:bg-primary/90 transition-all duration-300 hover:shadow-md"
+                >
                   Dashboard
                 </Button>
               </Link>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => signOut()} // ← fixed: no {redirectTo}
+                onClick={() => signOut()}
+                className="hover:bg-destructive/10 hover:text-destructive transition-colors"
               >
                 Sign Out
               </Button>
             </>
           ) : (
-            <>
-              <Link href="/login">
-                <Button variant="ghost" size="sm">
-                  Login
-                </Button>
-              </Link>
-              <Link href="/signup">
-                <Button variant="outline" size="sm">
-                  Sign Up
-                </Button>
-              </Link>
-            </>
+            <Link href="/login">
+              <Button
+                variant="default"
+                size="sm"
+                className="bg-linear-to-r from-primary to-indigo-600 hover:from-primary/90 hover:to-indigo-600/90 transition-all duration-300 hover:shadow-lg"
+              >
+                Account
+              </Button>
+            </Link>
           )}
         </div>
 
         {/* Mobile menu toggle */}
         <button
-          className="md:hidden p-2"
+          className="md:hidden p-2 rounded-full hover:bg transition-colors"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
         >
@@ -122,18 +148,18 @@ export default function Header() {
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu – scrollable */}
       {mobileOpen && (
-        <div className="md:hidden border-t bg-background">
+        <div className="md:hidden border-t bg-background/95 backdrop-blur-lg max-h-[90vh] overflow-y-auto">
           <nav className="container mx-auto px-4 py-6 flex flex-col gap-5">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-base font-medium py-2 transition-colors hover:text-primary",
+                  "text-base font-medium py-3 px-4 rounded-lg transition-all duration-300 hover:bg-accent hover:text-primary",
                   isActive(item.href)
-                    ? "text-primary"
+                    ? "bg-accent/80 text-primary font-semibold"
                     : "text-muted-foreground",
                 )}
                 onClick={() => {
@@ -153,37 +179,48 @@ export default function Header() {
               </Link>
             ))}
 
-            <div className="flex flex-col gap-4 pt-4 border-t">
+            {/* UzimaCare AI in mobile */}
+            <Link
+              href="/dashboard/ai-dashboard"
+              className="text-base font-medium py-3 px-4 rounded-lg flex items-center gap-2 transition-all duration-300 hover:bg-accent hover:text-primary"
+              onClick={() => setMobileOpen(false)}
+            >
+              <Sparkles className="h-5 w-5" />
+              UzimaCare AI
+            </Link>
+
+            <div className="flex flex-col gap-4 pt-6 border-t">
               {isLoading ? (
-                <span className="text-center text-muted-foreground">
+                <span className="text-center text-muted-foreground animate-pulse">
                   Loading...
                 </span>
-              ) : isAuthenticated ? (
+              ) : user ? (
                 <>
-                  <Link href="/dashboard">
-                    <Button className="bg-primary hover:bg-primary/90 w-full">
+                  <Link
+                    href={getDashboardUrl()}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <Button className="w-full bg-primary hover:bg-primary/90 transition-all duration-300">
                       Dashboard
                     </Button>
                   </Link>
                   <Button
                     variant="outline"
-                    className="w-full"
-                    onClick={() => signOut()} // ← fixed here too
+                    className="w-full hover:bg-destructive/10 hover:text-destructive transition-colors"
+                    onClick={() => {
+                      signOut();
+                      setMobileOpen(false);
+                    }}
                   >
                     Sign Out
                   </Button>
                 </>
               ) : (
-                <>
-                  <Link href="/login">
-                    <Button variant="outline" className="w-full">
-                      Login
-                    </Button>
-                  </Link>
-                  <Link href="/signup">
-                    <Button className="w-full">Sign Up</Button>
-                  </Link>
-                </>
+                <Link href="/login" onClick={() => setMobileOpen(false)}>
+                  <Button className="w-full bg-linear-to-r from-primary to-indigo-600 hover:from-primary/90 hover:to-indigo-600/90 transition-all duration-300">
+                    Account
+                  </Button>
+                </Link>
               )}
             </div>
           </nav>

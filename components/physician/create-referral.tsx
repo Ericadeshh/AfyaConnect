@@ -49,7 +49,8 @@ export default function CreateReferralPage({
       if (ext === "json") {
         const j = JSON.parse(text);
         if (typeof j === "string") parsed = j;
-        else if (j && typeof j.medicalHistory === "string") parsed = j.medicalHistory;
+        else if (j && typeof j.medicalHistory === "string")
+          parsed = j.medicalHistory;
         else parsed = JSON.stringify(j, null, 2);
       } else if (ext === "csv") {
         // crude csv: take first non-header row, first column
@@ -181,11 +182,15 @@ export default function CreateReferralPage({
 
   const toggleDiagnosis = (d: string) => {
     const dU = d.toUpperCase();
-    const cur = Array.isArray(formData.diagnosis) ? [...formData.diagnosis] : [];
+    const cur = Array.isArray(formData.diagnosis)
+      ? [...formData.diagnosis]
+      : [];
     if (cur.includes(dU)) {
       setFormData((prev) => ({
         ...prev,
-        diagnosis: Array.isArray(prev.diagnosis) ? prev.diagnosis.filter((x) => x !== dU) : [],
+        diagnosis: Array.isArray(prev.diagnosis)
+          ? prev.diagnosis.filter((x) => x !== dU)
+          : [],
       }));
       return;
     }
@@ -211,7 +216,9 @@ export default function CreateReferralPage({
       : !!selectedReasons;
     if (!formData.patientName || !(formData as any).labResults || !hasReason) {
       setLoading(false);
-      alert("Please fill required fields: Patient name, Lab results, and Reason for Referral.");
+      alert(
+        "Please fill required fields: Patient name, Lab results, and Reason for Referral.",
+      );
       return;
     }
 
@@ -230,9 +237,12 @@ export default function CreateReferralPage({
       let token: string | undefined;
       const patientId = formData.patientId?.trim();
       if (patientId) {
-        const existing = Array.from(db.referrals.values()).find((r: any) =>
-          r.patientId && r.patientId === patientId &&
-          (r.status === "pending-admin" || r.status === "Pending Admin Approval"),
+        const existing = Array.from(db.referrals.values()).find(
+          (r: any) =>
+            r.patientId &&
+            r.patientId === patientId &&
+            (r.status === "pending-admin" ||
+              r.status === "Pending Admin Approval"),
         );
         if (existing) {
           token = existing.referralToken || existing.token || undefined;
@@ -280,15 +290,15 @@ export default function CreateReferralPage({
 
       setTimeout(() => {
         setFormData({
-            patientName: "",
-            patientId: "",
-            medicalHistory: "",
-            labResults: "",
-            diagnosis: [],
-            referringHospital: physician.hospital,
-            receivingFacility: "",
-            priority: "Routine",
-          });
+          patientName: "",
+          patientId: "",
+          medicalHistory: "",
+          labResults: "",
+          diagnosis: [],
+          referringHospital: physician.hospital,
+          receivingFacility: "",
+          priority: "Routine",
+        });
         setSuccess(false);
       }, 2000);
     } finally {
@@ -297,7 +307,7 @@ export default function CreateReferralPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-6">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-blue-100 p-6">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-primary">
@@ -415,22 +425,31 @@ export default function CreateReferralPage({
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="type the condition"
                         className="w-full px-3 py-2 text-sm focus:outline-none"
-                        disabled={Array.isArray(formData.diagnosis) && formData.diagnosis.length >= 2}
+                        disabled={
+                          Array.isArray(formData.diagnosis) &&
+                          formData.diagnosis.length >= 2
+                        }
                       />
                       {searchTerm.trim().length > 0 && (
                         <div className="max-h-40 overflow-y-auto">
                           <ul className="divide-y">
                             {diseases
                               .filter((d) =>
-                                d.toLowerCase().includes(searchTerm.toLowerCase()),
+                                d
+                                  .toLowerCase()
+                                  .includes(searchTerm.toLowerCase()),
                               )
                               .map((d) => (
                                 <li
                                   key={d}
                                   onClick={() => toggleDiagnosis(d)}
                                   className={`p-2 cursor-pointer text-sm ${
-                                    Array.isArray((formData as any).diagnosis) &&
-                                    (formData as any).diagnosis.includes(d.toUpperCase())
+                                    Array.isArray(
+                                      (formData as any).diagnosis,
+                                    ) &&
+                                    (formData as any).diagnosis.includes(
+                                      d.toUpperCase(),
+                                    )
                                       ? "bg-blue-50 font-semibold"
                                       : "hover:bg-gray-50"
                                   }`}
@@ -445,10 +464,15 @@ export default function CreateReferralPage({
                     <input
                       type="hidden"
                       name="diagnosis"
-                      value={Array.isArray((formData as any).diagnosis) ? (formData as any).diagnosis.join('; ') : (formData as any).diagnosis}
+                      value={
+                        Array.isArray((formData as any).diagnosis)
+                          ? (formData as any).diagnosis.join("; ")
+                          : (formData as any).diagnosis
+                      }
                     />
                     <div className="mt-2">
-                      {Array.isArray((formData as any).diagnosis) && (formData as any).diagnosis.length > 0 ? (
+                      {Array.isArray((formData as any).diagnosis) &&
+                      (formData as any).diagnosis.length > 0 ? (
                         <div className="flex gap-2 flex-wrap">
                           {(formData as any).diagnosis.map((d: string) => (
                             <button
@@ -463,7 +487,9 @@ export default function CreateReferralPage({
                           ))}
                         </div>
                       ) : (
-                        <div className="text-xs text-text-secondary">Selected: None</div>
+                        <div className="text-xs text-text-secondary">
+                          Selected: None
+                        </div>
                       )}
                     </div>
                   </div>

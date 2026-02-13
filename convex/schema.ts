@@ -11,4 +11,41 @@ export default defineSchema({
     createdAt: v.string(),
     processingTimeMs: v.optional(v.number()),
   }).index("by_createdAt", ["createdAt"]),
+  // New users table for authentication
+  users: defineTable({
+    email: v.string(),
+    password: v.string(), // This will be hashed
+    name: v.string(),
+    role: v.union(
+      v.literal("admin"),
+      v.literal("physician"),
+      v.literal("patient"),
+    ),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+    lastLogin: v.optional(v.string()),
+    isActive: v.boolean(),
+    profileImage: v.optional(v.string()),
+    phoneNumber: v.optional(v.string()),
+    specialization: v.optional(v.string()), // For physicians
+    licenseNumber: v.optional(v.string()), // For physicians
+    dateOfBirth: v.optional(v.string()), // For patients
+    bloodGroup: v.optional(v.string()), // For patients
+  })
+    .index("by_email", ["email"])
+    .index("by_role", ["role"])
+    .index("by_email_and_role", ["email", "role"]),
+
+  // Sessions table for managing user sessions
+  sessions: defineTable({
+    userId: v.id("users"),
+    token: v.string(),
+    expiresAt: v.string(),
+    createdAt: v.string(),
+    userAgent: v.optional(v.string()),
+    ipAddress: v.optional(v.string()),
+  })
+    .index("by_token", ["token"])
+    .index("by_userId", ["userId"])
+    .index("by_expiresAt", ["expiresAt"]),
 });

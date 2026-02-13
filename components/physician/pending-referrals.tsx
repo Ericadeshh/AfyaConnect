@@ -27,26 +27,30 @@ export default function PendingReferralsPage({
     }
     return () => {
       if (typeof window !== "undefined") {
-        window.removeEventListener("referral:created", handler as EventListener);
-        window.removeEventListener("referral:completed", handler as EventListener);
+        window.removeEventListener(
+          "referral:created",
+          handler as EventListener,
+        );
+        window.removeEventListener(
+          "referral:completed",
+          handler as EventListener,
+        );
       }
     };
   }, []);
 
   const pendingReferrals = useMemo(() => {
-    return Array.from(db.referrals.values()).filter(
-      (ref: any) => {
-        if (ref.physicianId !== physician.id) return false;
-        const s = (ref.status || "").toString().toLowerCase();
-        return (
-          s === "pending-admin" ||
-          s === "pending admin approval" ||
-          s === "pending-payment" ||
-          s === "awaiting-biodata" ||
-          s === "awaiting biodata"
-        );
-      },
-    );
+    return Array.from(db.referrals.values()).filter((ref: any) => {
+      if (ref.physicianId !== physician.id) return false;
+      const s = (ref.status || "").toString().toLowerCase();
+      return (
+        s === "pending-admin" ||
+        s === "pending admin approval" ||
+        s === "pending-payment" ||
+        s === "awaiting-biodata" ||
+        s === "awaiting biodata"
+      );
+    });
   }, [physician.id, tick]);
 
   const getPriorityColor = (priority: string) => {
@@ -63,7 +67,7 @@ export default function PendingReferralsPage({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-6">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 to-blue-100 p-6">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-primary">Pending Referrals</h1>
@@ -84,7 +88,7 @@ export default function PendingReferralsPage({
                 className="p-6 cursor-pointer hover:shadow-lg transition-all"
               >
                 <div className="flex justify-between items-start">
-                  <div className="flex-grow">
+                  <div className="grow">
                     <h3 className="text-lg font-bold text-primary mb-2">
                       {referral.patientName}
                     </h3>

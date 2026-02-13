@@ -9,6 +9,9 @@
  */
 
 import type * as actions_ai_summarize from "../actions/ai_summarize.js";
+import type * as auth_actions from "../auth/actions.js";
+import type * as auth_mutations from "../auth/mutations.js";
+import type * as auth_queries from "../auth/queries.js";
 import type * as functions_ai_summaries from "../functions/ai_summaries.js";
 
 import type {
@@ -19,6 +22,9 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "actions/ai_summarize": typeof actions_ai_summarize;
+  "auth/actions": typeof auth_actions;
+  "auth/mutations": typeof auth_mutations;
+  "auth/queries": typeof auth_queries;
   "functions/ai_summaries": typeof functions_ai_summaries;
 }>;
 
