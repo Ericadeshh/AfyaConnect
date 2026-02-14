@@ -19,11 +19,12 @@ interface AuthResult {
 }
 
 interface UserWithPassword {
-  _id: Id<"users">; // Change this to Id type
+  _id: Id<"users">;
   email: string;
   password: string;
   name: string;
   role: "admin" | "physician" | "patient";
+  isActive: boolean;
   hospital?: string;
   specialization?: string;
   licenseNumber?: string;
@@ -70,11 +71,9 @@ export const signUpWithCrypto = action({
       v.literal("patient"),
     ),
     phoneNumber: v.optional(v.string()),
-    // Physician fields
     hospital: v.optional(v.string()),
     specialization: v.optional(v.string()),
     licenseNumber: v.optional(v.string()),
-    // Patient fields
     dateOfBirth: v.optional(v.string()),
     bloodGroup: v.optional(v.string()),
   },
@@ -92,11 +91,9 @@ export const signUpWithCrypto = action({
       name: args.name,
       role: args.role,
       phoneNumber: args.phoneNumber,
-      // Physician fields
       hospital: args.hospital,
       specialization: args.specialization,
       licenseNumber: args.licenseNumber,
-      // Patient fields
       dateOfBirth: args.dateOfBirth,
       bloodGroup: args.bloodGroup,
     });
@@ -106,7 +103,7 @@ export const signUpWithCrypto = action({
   },
 });
 
-// Action wrapper for signin that uses crypto
+// Action wrapper for signin that uses crypto - WITH IMPROVED ERROR MESSAGES
 export const signInWithCrypto = action({
   args: {
     email: v.string(),
@@ -120,29 +117,51 @@ export const signInWithCrypto = action({
   handler: async (ctx, args): Promise<AuthResult> => {
     console.log("SignIn action started for:", args.email);
 
-    // Get user from database - type assertion to ensure proper Id type
+    // Get user from database with the specified role
     const user = (await ctx.runQuery(api.auth.queries.getUserByEmailAndRole, {
       email: args.email,
       role: args.role,
     })) as UserWithPassword | null;
 
     if (!user) {
-      throw new Error("Invalid credentials");
+      // Check if user exists with a different role
+      const userByEmail = (await ctx.runQuery(api.auth.queries.getUserByEmail, {
+        email: args.email,
+      })) as UserWithPassword | null;
+
+      if (userByEmail) {
+        throw new Error(
+          `This account is registered as a ${userByEmail.role}. Please sign in with the correct role.`,
+        );
+      } else {
+        throw new Error(
+          "No account found with this email address. Please sign up first.",
+        );
+      }
     }
 
-    // Verify password using Node.js crypto
+    // Verify password
     const [salt, storedHash] = user.password.split(":");
     const isValid = verifyPassword(args.password, salt, storedHash);
 
     if (!isValid) {
-      throw new Error("Invalid credentials");
+      throw new Error(
+        "The password you entered is incorrect. Please try again.",
+      );
     }
 
-    // Call mutation to handle successful login - user._id is already Id<"users">
+    // Check if account is active
+    if (!user.isActive) {
+      throw new Error(
+        "This account has been deactivated. Please contact support.",
+      );
+    }
+
+    // Call mutation to handle successful login
     const result = await ctx.runMutation(
       api.auth.mutations.handleSuccessfulLogin,
       {
-        userId: user._id, // This is now properly typed as Id<"users">
+        userId: user._id,
       },
     );
 

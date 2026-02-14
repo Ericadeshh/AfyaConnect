@@ -371,3 +371,88 @@ export const getPendingReferralsAdmin = query({
     );
   },
 });
+
+// Get pending referrals count for admin (SINGLE INSTANCE - KEEP THIS ONE)
+export const getPendingReferralsCount = query({
+  args: {
+    adminToken: v.string(),
+  },
+  handler: async (ctx, args): Promise<number> => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", args.adminToken))
+      .first();
+
+    if (!session) {
+      throw new Error("Unauthorized");
+    }
+
+    const user = await ctx.db.get(session.userId);
+    if (!user || user.role !== "admin") {
+      throw new Error("Admin access required");
+    }
+
+    const pendingReferrals = await ctx.db
+      .query("referrals")
+      .withIndex("by_status", (q) => q.eq("status", "pending"))
+      .collect();
+
+    return pendingReferrals.length;
+  },
+});
+
+// Get pending count for a specific physician
+export const getPhysicianPendingCount = query({
+  args: {
+    token: v.string(),
+    physicianId: v.id("users"),
+  },
+  handler: async (ctx, args): Promise<number> => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", args.token))
+      .first();
+
+    if (!session || session.userId !== args.physicianId) {
+      throw new Error("Unauthorized");
+    }
+
+    const pending = await ctx.db
+      .query("referrals")
+      .withIndex("by_referringPhysicianId_and_status", (q) =>
+        q.eq("referringPhysicianId", args.physicianId).eq("status", "pending"),
+      )
+      .collect();
+
+    return pending.length;
+  },
+});
+
+// Get completed count for a specific physician
+export const getPhysicianCompletedCount = query({
+  args: {
+    token: v.string(),
+    physicianId: v.id("users"),
+  },
+  handler: async (ctx, args): Promise<number> => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", args.token))
+      .first();
+
+    if (!session || session.userId !== args.physicianId) {
+      throw new Error("Unauthorized");
+    }
+
+    const completed = await ctx.db
+      .query("referrals")
+      .withIndex("by_referringPhysicianId_and_status", (q) =>
+        q
+          .eq("referringPhysicianId", args.physicianId)
+          .eq("status", "completed"),
+      )
+      .collect();
+
+    return completed.length;
+  },
+});

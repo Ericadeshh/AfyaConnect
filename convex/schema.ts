@@ -2,8 +2,8 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  // Your existing ai_summaries table
   ai_summaries: defineTable({
+    physicianId: v.optional(v.id("users")), // Add this field
     inputType: v.string(),
     inputPreview: v.string(),
     summary: v.string(),
@@ -11,7 +11,9 @@ export default defineSchema({
     modelUsed: v.string(),
     createdAt: v.string(),
     processingTimeMs: v.optional(v.number()),
-  }).index("by_createdAt", ["createdAt"]),
+  })
+    .index("by_createdAt", ["createdAt"])
+    .index("by_physicianId", ["physicianId"]), // Add this index
 
   // Users table for authentication
   users: defineTable({

@@ -1,7 +1,20 @@
 import Link from "next/link";
-import { Facebook, Twitter, Linkedin, Mail, Phone, MapPin } from "lucide-react";
+import {
+  Facebook,
+  Twitter,
+  Linkedin,
+  Mail,
+  Phone,
+  MapPin,
+  Sparkles,
+  Code2,
+  UserCog,
+  Laptop,
+} from "lucide-react";
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="border-t bg-muted/30">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -21,6 +34,17 @@ export default function Footer() {
               facilities across Kenya to deliver faster, safer, and more
               coordinated patient care.
             </p>
+
+            {/* AI Dashboard Link */}
+            <Link
+              href="/dashboard/ai-dashboard"
+              className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-lg mb-6 hover:bg-primary/20 transition-all duration-300 group"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span className="text-sm font-medium">
+                AI-Powered Summarization
+              </span>
+            </Link>
 
             {/* Social icons */}
             <div className="flex items-center gap-5">
@@ -93,6 +117,16 @@ export default function Footer() {
                   Dashboard
                 </Link>
               </li>
+              {/* AI Dashboard Link */}
+              <li>
+                <Link
+                  href="/dashboard/ai-dashboard"
+                  className="text-primary hover:text-primary/80 font-medium flex items-center gap-1 transition-colors"
+                >
+                  <Sparkles className="h-3 w-3" />
+                  AI Dashboard
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -145,7 +179,7 @@ export default function Footer() {
             <ul className="space-y-4 text-sm">
               <li>
                 <Link
-                  href="#"
+                  href="/privacy"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Privacy Policy
@@ -153,7 +187,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/terms"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Terms of Service
@@ -161,7 +195,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/data-protection"
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
                   Data Protection
@@ -183,15 +217,23 @@ export default function Footer() {
         <div className="border-t py-8 text-center text-sm text-muted-foreground">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div>
-              © {new Date().getFullYear()} UzimaCare by AfyaConnect. All rights
-              reserved.
+              © {currentYear} UzimaCare by AfyaConnect. All rights reserved.
             </div>
 
-            <div className="flex items-center gap-6">
-              <span className="flex items-center gap-2">
-                <span className="text-xs font-medium">Built for</span>
-                <span className="inline-flex items-center gap-1 text-primary font-medium">
-                  Red White & Build Hackathon
+            <div className="flex items-center gap-4">
+              {/* Developer credit - with technician icon */}
+              <span className="flex items-center gap-1.5 bg-primary/5 px-3 py-1.5 rounded-full">
+                <UserCog className="h-3.5 w-3.5 text-primary" />
+                <span>Built by</span>
+                <span className="font-small text-primary">Eric Lumumba</span>
+              </span>
+
+              <span className="text-xs text-muted-foreground">|</span>
+
+              <span className="flex items-center gap-1.5">
+                <span className="text-xs">For</span>
+                <span className="text-primary font-medium bg-primary/5 px-2 py-1 rounded-full text-xs">
+                  Red White & Build U.S-Kenya Hackathon
                 </span>
               </span>
             </div>

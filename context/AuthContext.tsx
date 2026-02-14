@@ -14,20 +14,19 @@ interface User {
   email: string;
   name: string;
   role: "admin" | "physician" | "patient";
-  // Optional fields that might exist based on role
   phoneNumber?: string;
-  specialization?: string; // For physicians
-  licenseNumber?: string; // For physicians
-  dateOfBirth?: string; // For patients
-  bloodGroup?: string; // For patients
-  hospital?: string; // For physicians (if you have this field)
+  specialization?: string;
+  licenseNumber?: string;
+  dateOfBirth?: string;
+  bloodGroup?: string;
+  hospital?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  signIn: (email: string, password: string, role: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
   signUp: (userData: SignUpData) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -42,8 +41,38 @@ interface SignUpData {
   licenseNumber?: string;
   dateOfBirth?: string;
   bloodGroup?: string;
-  hospital?: string; // Add this if physicians have a hospital field
+  hospital?: string;
 }
+
+// User-friendly error messages
+const getFriendlyErrorMessage = (error: any): string => {
+  const message = error?.message || error?.data?.message || String(error);
+
+  if (message.includes("No account found")) {
+    return "No account found with this email address. Please sign up first.";
+  }
+  if (message.includes("registered as")) {
+    return message; // Already friendly: "This account is registered as a [role]"
+  }
+  if (message.includes("password is incorrect")) {
+    return "The password you entered is incorrect. Please try again.";
+  }
+  if (message.includes("deactivated")) {
+    return "This account has been deactivated. Please contact support.";
+  }
+  if (message.includes("already exists")) {
+    return "An account with this email already exists. Please sign in instead.";
+  }
+  if (message.includes("network") || message.includes("Network")) {
+    return "Network error. Please check your internet connection and try again.";
+  }
+  if (message.includes("timeout") || message.includes("Timeout")) {
+    return "Request timed out. Please try again.";
+  }
+
+  // Default message
+  return "Something went wrong. Please try again.";
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -53,18 +82,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // Use actions for crypto operations
   const signInAction = useAction(api.auth.actions.signInWithCrypto);
   const signUpAction = useAction(api.auth.actions.signUpWithCrypto);
-
-  // Use mutations for non-crypto operations
   const signOutMutation = useMutation(api.auth.mutations.signOut);
   const validateSessionMutation = useMutation(
     api.auth.mutations.validateSession,
   );
 
   useEffect(() => {
-    // Check for existing session on mount
     const storedToken = localStorage.getItem("authToken");
     if (storedToken) {
       validateSessionMutation({ token: storedToken })
@@ -88,25 +113,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [validateSessionMutation]);
 
-  const signIn = async (email: string, password: string, role: string) => {
+  const signIn = async (email: string, password: string) => {
     try {
-      const result = await signInAction({
-        email,
-        password,
-        role: role as "admin" | "physician" | "patient",
-      });
+      // We need to determine the role - we'll try patient first, then physician
+      // This is a workaround since we removed role from login form
+      let result;
+      let lastError;
 
-      if (result.success) {
+      // Try patient first
+      try {
+        result = await signInAction({
+          email,
+          password,
+          role: "patient",
+        });
+      } catch (error) {
+        lastError = error;
+        // If patient fails, try physician
+        try {
+          result = await signInAction({
+            email,
+            password,
+            role: "physician",
+          });
+        } catch (error) {
+          lastError = error;
+          // If physician fails, try admin (though admin login is restricted)
+          try {
+            result = await signInAction({
+              email,
+              password,
+              role: "admin",
+            });
+          } catch (error) {
+            lastError = error;
+            throw lastError;
+          }
+        }
+      }
+
+      if (result && result.success) {
         localStorage.setItem("authToken", result.token);
         setUser(result.user);
         setToken(result.token);
-
-        // Redirect based on role
         redirectToDashboard(result.user.role);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Sign in error:", error);
-      throw error;
+      throw new Error(getFriendlyErrorMessage(error));
     }
   };
 
@@ -118,13 +172,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem("authToken", result.token);
         setUser(result.user);
         setToken(result.token);
-
-        // Redirect based on role
         redirectToDashboard(result.user.role);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Sign up error:", error);
-      throw error;
+      throw new Error(getFriendlyErrorMessage(error));
     }
   };
 
@@ -168,6 +220,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// Export useAuth hook
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

@@ -29,16 +29,16 @@ import {
   TrendingUp,
   Menu,
   X,
-  UserCircle,
   ChevronDown,
   Settings,
   HelpCircle,
-  Bell,
-  Users2,
-  UserPlus,
   UserCog,
   List,
+  RefreshCw,
+  AlertCircle,
+  XCircle,
 } from "lucide-react";
+import Link from "next/link";
 
 interface AdminDashboardProps {
   user: any;
@@ -64,22 +64,38 @@ export default function AdminDashboard({
     useState<ReferralsSubTab>("all");
   const [physiciansSubTab, setPhysiciansSubTab] =
     useState<PhysiciansSubTab>("list");
-  const [stats, setStats] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { token } = useAuth();
   const profileMenuRef = useRef<HTMLDivElement>(null);
 
-  // Fetch dashboard stats
+  // Fetch dashboard stats in real-time
   const dashboardStats = useQuery(api.admin.queries.getDashboardStats, {
     adminToken: token || "",
   });
 
-  useEffect(() => {
-    if (dashboardStats) {
-      setStats(dashboardStats);
-    }
-  }, [dashboardStats]);
+  // Fetch real-time counts for badges
+  const pendingReferralsCount = useQuery(
+    api.referrals.queries.getPendingReferralsCount,
+    {
+      adminToken: token || "",
+    },
+  );
+
+  const pendingFacilitiesCount = useQuery(
+    api.admin.queries.getPendingFacilitiesCount,
+    {
+      adminToken: token || "",
+    },
+  );
+
+  const pendingPhysiciansCount = useQuery(
+    api.admin.queries.getPendingPhysiciansCount,
+    {
+      adminToken: token || "",
+    },
+  );
 
   // Close profile menu when clicking outside
   useEffect(() => {
@@ -95,26 +111,31 @@ export default function AdminDashboard({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => setIsRefreshing(false), 1000);
+  };
+
   const navItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     {
       id: "referrals",
       label: "Referrals",
       icon: FileText,
-      count: stats?.referrals.pendingApproval,
+      count: pendingReferralsCount,
     },
     { id: "calendar", label: "Calendar", icon: Calendar },
     {
       id: "facilities",
       label: "Facilities",
       icon: Building2,
-      count: stats?.facilities.pending,
+      count: pendingFacilitiesCount,
     },
     {
       id: "physicians",
       label: "Physicians",
       icon: Stethoscope,
-      count: stats?.physicians.pendingVerification,
+      count: pendingPhysiciansCount,
     },
   ];
 
@@ -128,9 +149,9 @@ export default function AdminDashboard({
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
-            {/* Stats Grid */}
+            {/* Stats Grid with Real-time Data */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-              <Card className="p-4 sm:p-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+              <Card className="p-4 sm:p-6 bg-linear-to-br from-blue-500 to-blue-600 text-white">
                 <div className="flex items-center justify-between mb-2 sm:mb-4">
                   <Activity className="w-5 h-5 sm:w-8 sm:h-8 opacity-80" />
                   <span className="text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/20 rounded-full">
@@ -138,35 +159,35 @@ export default function AdminDashboard({
                   </span>
                 </div>
                 <p className="text-xl sm:text-3xl font-bold">
-                  {stats?.referrals.thisMonth || 0}
+                  {dashboardStats?.referrals?.thisMonth || 0}
                 </p>
                 <p className="text-xs sm:text-sm text-blue-100 mt-0.5 sm:mt-1">
                   New Referrals
                 </p>
                 <p className="text-[10px] sm:text-xs text-blue-200 mt-1 sm:mt-2">
-                  Total: {stats?.referrals.total || 0}
+                  Total: {dashboardStats?.referrals?.total || 0}
                 </p>
               </Card>
 
-              <Card className="p-4 sm:p-6 bg-gradient-to-br from-green-500 to-green-600 text-white">
+              <Card className="p-4 sm:p-6 bg-linear-to-br from-green-500 to-green-600 text-white">
                 <div className="flex items-center justify-between mb-2 sm:mb-4">
                   <CheckCircle2 className="w-5 h-5 sm:w-8 sm:h-8 opacity-80" />
                   <span className="text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/20 rounded-full">
-                    {stats?.referrals.completionRate || 0}%
+                    {dashboardStats?.referrals?.completionRate || 0}%
                   </span>
                 </div>
                 <p className="text-xl sm:text-3xl font-bold">
-                  {stats?.referrals.completed || 0}
+                  {dashboardStats?.referrals?.completed || 0}
                 </p>
                 <p className="text-xs sm:text-sm text-green-100 mt-0.5 sm:mt-1">
                   Completed
                 </p>
                 <p className="text-[10px] sm:text-xs text-green-200 mt-1 sm:mt-2">
-                  Approved: {stats?.referrals.approved || 0}
+                  Approved: {dashboardStats?.referrals?.approved || 0}
                 </p>
               </Card>
 
-              <Card className="p-4 sm:p-6 bg-gradient-to-br from-yellow-500 to-yellow-600 text-white">
+              <Card className="p-4 sm:p-6 bg-linear-to-br from-yellow-500 to-yellow-600 text-white">
                 <div className="flex items-center justify-between mb-2 sm:mb-4">
                   <Clock className="w-5 h-5 sm:w-8 sm:h-8 opacity-80" />
                   <span className="text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/20 rounded-full">
@@ -174,7 +195,7 @@ export default function AdminDashboard({
                   </span>
                 </div>
                 <p className="text-xl sm:text-3xl font-bold">
-                  {stats?.referrals.pendingApproval || 0}
+                  {dashboardStats?.referrals?.pendingApproval || 0}
                 </p>
                 <p className="text-xs sm:text-sm text-yellow-100 mt-0.5 sm:mt-1">
                   Pending Approval
@@ -184,7 +205,7 @@ export default function AdminDashboard({
                 </p>
               </Card>
 
-              <Card className="p-4 sm:p-6 bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+              <Card className="p-4 sm:p-6 bg-linear-to-br from-purple-500 to-purple-600 text-white">
                 <div className="flex items-center justify-between mb-2 sm:mb-4">
                   <Users className="w-5 h-5 sm:w-8 sm:h-8 opacity-80" />
                   <span className="text-[10px] sm:text-xs font-medium px-1.5 sm:px-2 py-0.5 sm:py-1 bg-white/20 rounded-full">
@@ -192,18 +213,19 @@ export default function AdminDashboard({
                   </span>
                 </div>
                 <p className="text-xl sm:text-3xl font-bold">
-                  {stats?.physicians.active || 0}
+                  {dashboardStats?.physicians?.active || 0}
                 </p>
                 <p className="text-xs sm:text-sm text-purple-100 mt-0.5 sm:mt-1">
                   Active Physicians
                 </p>
                 <p className="text-[10px] sm:text-xs text-purple-200 mt-1 sm:mt-2">
-                  Pending: {stats?.physicians.pendingVerification || 0}
+                  Pending:{" "}
+                  {dashboardStats?.physicians?.pendingVerification || 0}
                 </p>
               </Card>
             </div>
 
-            {/* Secondary Stats */}
+            {/* Secondary Stats with Real-time Data */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <Card className="p-4 sm:p-6">
                 <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4 flex items-center gap-2">
@@ -214,19 +236,25 @@ export default function AdminDashboard({
                   <div className="flex justify-between items-center text-sm sm:text-base">
                     <span className="text-gray-600">Total Facilities</span>
                     <span className="font-semibold">
-                      {stats?.facilities.total || 0}
+                      {dashboardStats?.facilities?.total || 0}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-sm sm:text-base">
                     <span className="text-gray-600">Active</span>
                     <span className="text-green-600 font-semibold">
-                      {stats?.facilities.active || 0}
+                      {dashboardStats?.facilities?.active || 0}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-sm sm:text-base">
                     <span className="text-gray-600">Pending</span>
                     <span className="text-yellow-600 font-semibold">
-                      {stats?.facilities.pending || 0}
+                      {dashboardStats?.facilities?.pending || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm sm:text-base">
+                    <span className="text-gray-600">Inactive</span>
+                    <span className="text-red-600 font-semibold">
+                      {dashboardStats?.facilities?.inactive || 0}
                     </span>
                   </div>
                 </div>
@@ -241,32 +269,49 @@ export default function AdminDashboard({
                   <div className="flex justify-between items-center text-sm sm:text-base">
                     <span className="text-gray-600">Completion Rate</span>
                     <span className="font-semibold text-green-600">
-                      {stats?.referrals.completionRate || 0}%
+                      {dashboardStats?.referrals?.completionRate || 0}%
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-sm sm:text-base">
                     <span className="text-gray-600">Approved</span>
                     <span className="text-blue-600 font-semibold">
-                      {stats?.referrals.approved || 0}
+                      {dashboardStats?.referrals?.approved || 0}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-sm sm:text-base">
-                    <span className="text-gray-600">Cancelled/Rejected</span>
+                    <span className="text-gray-600">Rejected</span>
                     <span className="text-red-600 font-semibold">
-                      {stats?.referrals.cancelled || 0}
+                      {dashboardStats?.referrals?.rejected || 0}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm sm:text-base">
+                    <span className="text-gray-600">Cancelled</span>
+                    <span className="text-orange-600 font-semibold">
+                      {dashboardStats?.referrals?.cancelled || 0}
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2 mt-2">
                     <div
                       className="bg-green-500 h-1.5 sm:h-2 rounded-full"
                       style={{
-                        width: `${stats?.referrals.completionRate || 0}%`,
+                        width: `${dashboardStats?.referrals?.completionRate || 0}%`,
                       }}
                     ></div>
                   </div>
                 </div>
               </Card>
             </div>
+
+            {/* Recent Activity - Can be implemented later */}
+            <Card className="p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <Activity className="w-5 h-5 text-blue-500" />
+                Recent Activity
+              </h3>
+              <div className="text-center py-8 text-gray-500">
+                <p>Real-time activity feed coming soon</p>
+              </div>
+            </Card>
           </motion.div>
         );
 
@@ -278,7 +323,7 @@ export default function AdminDashboard({
             exit={{ opacity: 0, y: -20 }}
             className="space-y-4 sm:space-y-6"
           >
-            {/* Sub-tabs */}
+            {/* Sub-tabs with real-time counts */}
             <div className="flex gap-2 border-b border-gray-200 pb-2 overflow-x-auto scrollbar-hide">
               <Button
                 onClick={() => setReferralsSubTab("all")}
@@ -303,9 +348,9 @@ export default function AdminDashboard({
               >
                 <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                 Pending Approval
-                {stats?.referrals.pendingApproval > 0 && (
+                {pendingReferralsCount > 0 && (
                   <span className="ml-1 px-1.5 sm:px-2 py-0.5 bg-white text-yellow-600 rounded-full text-[10px] sm:text-xs font-medium">
-                    {stats?.referrals.pendingApproval}
+                    {pendingReferralsCount}
                   </span>
                 )}
               </Button>
@@ -334,7 +379,7 @@ export default function AdminDashboard({
             exit={{ opacity: 0, y: -20 }}
             className="space-y-4 sm:space-y-6"
           >
-            {/* Physician Sub-tabs */}
+            {/* Physician Sub-tabs with real counts */}
             <div className="flex gap-2 border-b border-gray-200 pb-2 overflow-x-auto scrollbar-hide">
               <Button
                 onClick={() => setPhysiciansSubTab("list")}
@@ -348,7 +393,7 @@ export default function AdminDashboard({
                 <List className="w-3 h-3 sm:w-4 sm:h-4" />
                 View Physicians
                 <span className="ml-1 px-1.5 py-0.5 bg-white text-purple-600 rounded-full text-[10px] sm:text-xs font-medium">
-                  {stats?.physicians.total || 0}
+                  {dashboardStats?.physicians?.total || 0}
                 </span>
               </Button>
               <Button
@@ -362,6 +407,11 @@ export default function AdminDashboard({
               >
                 <UserCog className="w-3 h-3 sm:w-4 sm:h-4" />
                 Manage Physicians
+                {pendingPhysiciansCount > 0 && (
+                  <span className="ml-1 px-1.5 py-0.5 bg-white text-blue-600 rounded-full text-[10px] sm:text-xs font-medium">
+                    {pendingPhysiciansCount}
+                  </span>
+                )}
               </Button>
             </div>
 
@@ -405,7 +455,7 @@ export default function AdminDashboard({
                 <span className="text-sm sm:text-base text-gray-600">
                   Welcome back,
                 </span>
-                <span className="text-sm sm:text-base font-semibold text-gray-900 truncate max-w-[100px] sm:max-w-[150px]">
+                <span className="text-sm sm:text-base font-semibold text-gray-900 truncate max-w-25 sm:max-w-37.5">
                   {user?.fullName?.split(" ")[0] || "Admin"}
                 </span>
               </div>
@@ -413,6 +463,17 @@ export default function AdminDashboard({
 
             {/* Right side - Actions */}
             <div className="flex items-center gap-1 sm:gap-3">
+              {/* Refresh button */}
+              <button
+                onClick={handleRefresh}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="Refresh"
+              >
+                <RefreshCw
+                  className={`w-4 h-4 text-gray-600 ${isRefreshing ? "animate-spin" : ""}`}
+                />
+              </button>
+
               {/* Notification Bell */}
               <NotificationBell userId={user?.id} />
 
@@ -422,7 +483,7 @@ export default function AdminDashboard({
                   onClick={() => setProfileMenuOpen(!profileMenuOpen)}
                   className="flex items-center gap-1 sm:gap-2 p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-xs sm:text-sm">
                     {user?.fullName?.charAt(0) || "A"}
                   </div>
                   <ChevronDown
@@ -450,27 +511,25 @@ export default function AdminDashboard({
                         </p>
                       </div>
 
-                      <button
-                        onClick={() => {
-                          setProfileMenuOpen(false);
-                          // Navigate to profile settings
-                        }}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                      >
-                        <Settings className="w-4 h-4" />
-                        Settings
-                      </button>
+                      <Link href="/admin/settings" className="block">
+                        <button
+                          onClick={() => setProfileMenuOpen(false)}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        >
+                          <Settings className="w-4 h-4" />
+                          Settings
+                        </button>
+                      </Link>
 
-                      <button
-                        onClick={() => {
-                          setProfileMenuOpen(false);
-                          // Navigate to help
-                        }}
-                        className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                      >
-                        <HelpCircle className="w-4 h-4" />
-                        Help & Support
-                      </button>
+                      <Link href="/admin/help" className="block">
+                        <button
+                          onClick={() => setProfileMenuOpen(false)}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                        >
+                          <HelpCircle className="w-4 h-4" />
+                          Help & Support
+                        </button>
+                      </Link>
 
                       <div className="border-t border-gray-100 my-1"></div>
 

@@ -13,7 +13,6 @@ export const getAllFacilities = query({
     county: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<Doc<"facilities">[]> => {
-    // Verify admin
     const session = await ctx.db
       .query("sessions")
       .withIndex("by_token", (q) => q.eq("token", args.adminToken))
@@ -86,21 +85,17 @@ export const getAllPhysicians = query({
       .first();
 
     if (!session) {
-      console.log("No session found for token:", args.adminToken);
       throw new Error("Unauthorized");
     }
 
     const admin = await ctx.db.get(session.userId);
     if (!admin || admin.role !== "admin") {
-      console.log("User is not admin:", admin?.role);
       throw new Error("Admin access required");
     }
 
-    // Get all physician profiles
     let profiles: Doc<"physicianProfiles">[] = await ctx.db
       .query("physicianProfiles")
       .collect();
-    console.log("Raw physician profiles found:", profiles.length);
 
     // Apply filters
     if (args.facilityId) {
@@ -137,7 +132,7 @@ export const getAllPhysicians = query({
   },
 });
 
-// Get dashboard stats
+// Get dashboard stats - FIXED VERSION
 export const getDashboardStats = query({
   args: {
     adminToken: v.string(),
@@ -167,27 +162,28 @@ export const getDashboardStats = query({
     // Get all referrals
     const referrals = await ctx.db.query("referrals").collect();
 
-    // Get users with physician role
-    const physicianUsers = await ctx.db
-      .query("users")
-      .withIndex("by_role", (q) => q.eq("role", "physician"))
-      .collect();
-
-    // Get physician profiles
-    const physicianProfiles = await ctx.db.query("physicianProfiles").collect();
-
-    // Filter this month's referrals
+    // Calculate this month's referrals
     const thisMonthReferrals = referrals.filter(
       (r) => r.createdAt >= firstDayOfMonth,
     );
 
-    // Get counts by status
+    // Calculate counts by status - FIXED: Use proper status values
     const pendingApproval = referrals.filter(
       (r) => r.status === "pending",
     ).length;
     const completed = referrals.filter((r) => r.status === "completed").length;
     const approved = referrals.filter((r) => r.status === "approved").length;
+    const rejected = referrals.filter((r) => r.status === "rejected").length;
     const cancelled = referrals.filter((r) => r.status === "cancelled").length;
+
+    // Calculate total referrals
+    const totalReferrals = referrals.length;
+
+    // Calculate completion rate (completed vs total)
+    const completionRate =
+      totalReferrals > 0
+        ? ((completed / totalReferrals) * 100).toFixed(1)
+        : "0.0";
 
     // Get facility stats
     const facilities = await ctx.db.query("facilities").collect();
@@ -197,37 +193,109 @@ export const getDashboardStats = query({
     const pendingFacilities = facilities.filter(
       (f) => f.status === "pending",
     ).length;
+    const inactiveFacilities = facilities.filter(
+      (f) => f.status === "inactive",
+    ).length;
 
     // Get physician stats
+    const physicianProfiles = await ctx.db.query("physicianProfiles").collect();
     const activePhysicians = physicianProfiles.filter((p) => p.isActive).length;
     const pendingVerification = physicianProfiles.filter(
       (p) => !p.verifiedAt,
     ).length;
+    const inactivePhysicians = physicianProfiles.filter(
+      (p) => !p.isActive && p.verifiedAt,
+    ).length;
+
+    // Get users with physician role
+    const physicianUsers = await ctx.db
+      .query("users")
+      .withIndex("by_role", (q) => q.eq("role", "physician"))
+      .collect();
 
     return {
       referrals: {
-        total: referrals.length,
+        total: totalReferrals,
         thisMonth: thisMonthReferrals.length,
         pendingApproval,
         completed,
         approved,
+        rejected,
         cancelled,
-        completionRate: referrals.length
-          ? ((completed / referrals.length) * 100).toFixed(1)
-          : 0,
+        completionRate,
       },
       facilities: {
         total: facilities.length,
         active: activeFacilities,
         pending: pendingFacilities,
+        inactive: inactiveFacilities,
       },
       physicians: {
         total: physicianProfiles.length,
         active: activePhysicians,
         pendingVerification,
-        userCount: physicianUsers.length, // For reference
+        inactive: inactivePhysicians,
+        userCount: physicianUsers.length,
       },
     };
+  },
+});
+
+// Get pending facilities count
+export const getPendingFacilitiesCount = query({
+  args: {
+    adminToken: v.string(),
+  },
+  handler: async (ctx, args): Promise<number> => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", args.adminToken))
+      .first();
+
+    if (!session) {
+      throw new Error("Unauthorized");
+    }
+
+    const admin = await ctx.db.get(session.userId);
+    if (!admin || admin.role !== "admin") {
+      throw new Error("Admin access required");
+    }
+
+    const facilities = await ctx.db
+      .query("facilities")
+      .withIndex("by_status", (q) => q.eq("status", "pending"))
+      .collect();
+
+    return facilities.length;
+  },
+});
+
+// Get pending physicians count
+export const getPendingPhysiciansCount = query({
+  args: {
+    adminToken: v.string(),
+  },
+  handler: async (ctx, args): Promise<number> => {
+    const session = await ctx.db
+      .query("sessions")
+      .withIndex("by_token", (q) => q.eq("token", args.adminToken))
+      .first();
+
+    if (!session) {
+      throw new Error("Unauthorized");
+    }
+
+    const admin = await ctx.db.get(session.userId);
+    if (!admin || admin.role !== "admin") {
+      throw new Error("Admin access required");
+    }
+
+    const physicians = await ctx.db
+      .query("physicianProfiles")
+      .filter((q) => q.eq(q.field("verifiedAt"), undefined))
+      .collect();
+
+    return physicians.length;
   },
 });
 
@@ -252,7 +320,7 @@ export const getPendingReferrals = query({
       .order("desc")
       .collect();
 
-    // Enrich with physician and patient data
+    // Enrich with physician data
     return await Promise.all(
       pendingReferrals.map(async (referral) => {
         const physician = await ctx.db.get(referral.referringPhysicianId);

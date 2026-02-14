@@ -1,4 +1,3 @@
-// app/page.tsx
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -12,6 +11,10 @@ import {
   Building2,
   Users,
   HeartHandshake,
+  Sparkles,
+  Brain,
+  Zap,
+  CreditCard,
 } from "lucide-react";
 import Newsletter from "@/components/layout/Newsletter";
 
@@ -34,7 +37,7 @@ export default function Home() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/dashboard">
+              <Link href="/signup">
                 <Button
                   size="lg"
                   className="bg-primary hover:bg-primary/90 text-lg px-8"
@@ -51,8 +54,67 @@ export default function Home() {
 
             <p className="mt-6 text-sm text-muted-foreground">
               Built for physicians, administrators, and healthcare facilities •
-              Powered by secure Kenyan digital infrastructure
+              Powered by secure Kenyan digital infrastructure •{" "}
+              <span className="inline-flex items-center gap-1 font-medium text-primary">
+                <Sparkles className="h-3 w-3" /> AI-enhanced workflows
+              </span>
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* AI Features Section */}
+      <section className="py-20 md:py-32 bg-linear-to-br from-primary/5 via-background to-accent/5">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4">
+              <Brain className="h-4 w-4" />
+              <span className="text-sm font-medium">
+                AI-Powered Intelligence
+              </span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Smarter Referrals with AI
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Our AI engine processes patient data instantly, saving physicians
+              time and improving accuracy.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12 max-w-6xl mx-auto">
+            <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 p-8 text-center">
+              <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                <FileText className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">AI Summarization</h3>
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                Upload clinical notes, lab results, or voice recordings. Our AI
+                generates concise summaries for receiving physicians.
+              </p>
+            </Card>
+
+            <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 p-8 text-center">
+              <div className="w-16 h-16 mx-auto rounded-full bg-accent/10 flex items-center justify-center mb-6">
+                <Zap className="h-8 w-8 text-accent" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">Smart Matching</h3>
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                AI suggests the best receiving facility based on specialty,
+                distance, and availability.
+              </p>
+            </Card>
+
+            <Card className="border-none shadow-lg hover:shadow-xl transition-all duration-300 p-8 text-center">
+              <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                <Brain className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">Predictive Analytics</h3>
+              <p className="text-muted-foreground text-lg leading-relaxed">
+                Identify referral patterns, predict bottlenecks, and optimize
+                resource allocation across facilities.
+              </p>
+            </Card>
           </div>
         </div>
       </section>
@@ -128,7 +190,7 @@ export default function Home() {
               {
                 step: "1",
                 title: "Physician Creates Referral",
-                desc: "Enter patient details, history, diagnosis.",
+                desc: "Enter patient details, history, diagnosis. AI assists with summarization.",
                 icon: FileText,
               },
               {
@@ -141,12 +203,12 @@ export default function Home() {
                 step: "3",
                 title: "Patient Pays & Confirms",
                 desc: "Receive M-Pesa push. Payment confirms instantly.",
-                icon: Smartphone,
+                icon: CreditCard,
               },
               {
                 step: "4",
                 title: "Seamless Care Delivery",
-                desc: "Patient arrives with full digital record.",
+                desc: "Patient arrives with full digital record, AI-summarized for quick review.",
                 icon: ShieldCheck,
               },
             ].map((item, i) => (
@@ -168,9 +230,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─────────────────────────────────────────────── */}
-      {/*                UPDATED PRICING SECTION           */}
-      {/* ─────────────────────────────────────────────── */}
+      {/* UPDATED PRICING SECTION - B2B & B2C */}
       <section id="pricing" className="py-20 md:py-32 bg-muted/20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -178,120 +238,221 @@ export default function Home() {
               Simple, Transparent Pricing
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Choose the plan that matches your facility size and referral
-              volume.
+              Affordable plans for healthcare facilities and patients.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 lg:gap-12 max-w-6xl mx-auto">
-            {/* Demo / Pilot */}
-            <Card className="border-2 border-muted shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-muted text-muted-foreground text-xs font-semibold px-4 py-1 rounded-bl-lg">
-                Demo
+          {/* B2B - Hospital/Facility Plans */}
+          <div className="mb-16">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-2">
+                <Building2 className="h-4 w-4" />
+                <span className="text-sm font-medium">B2B</span>
               </div>
-              <div className="p-8 text-center">
-                <h3 className="text-2xl font-bold mb-2">Demo</h3>
-                <p className="text-4xl font-bold mb-1">KSh 0</p>
-                <p className="text-sm text-muted-foreground mb-8">
-                  Test / Pilot plan
-                </p>
+              <h3 className="text-2xl md:text-3xl font-bold">
+                For Healthcare Facilities
+              </h3>
+              <p className="text-muted-foreground">
+                Annual contracts • Volume discounts available
+              </p>
+            </div>
 
-                <ul className="space-y-4 text-left mb-8">
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    Max 20 referrals/month
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    Access to 5 hospitals in network
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
-                    Access by 5 physicians max
-                  </li>
-                </ul>
+            <div className="grid md:grid-cols-3 gap-8 lg:gap-12 max-w-6xl mx-auto">
+              {/* Small Clinic */}
+              <Card className="border-2 border-muted shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+                <div className="p-8 text-center">
+                  <h3 className="text-2xl font-bold mb-2">Small Clinic</h3>
+                  <p className="text-4xl font-bold mb-1">KSh 25,000</p>
+                  <p className="text-sm text-muted-foreground mb-8">per year</p>
 
-                <Link href="/dashboard">
-                  <Button variant="outline" className="w-full">
-                    Start Demo
-                  </Button>
-                </Link>
-              </div>
-            </Card>
+                  <ul className="space-y-4 text-left mb-8">
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      Up to 5 physicians
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      200 referrals/month
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      Basic AI summarization
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-green-500" />
+                      Email support
+                    </li>
+                  </ul>
 
-            {/* Sub-County Level */}
-            <Card className="border-2 border-primary shadow-2xl relative overflow-hidden scale-105 z-10">
-              <div className="absolute top-0 inset-x-0 bg-primary text-primary-foreground text-xs font-semibold py-1 text-center">
-                Most Popular
-              </div>
-              <div className="p-8 text-center">
-                <h3 className="text-2xl font-bold mb-2">
-                  Sub-County Level Hospitals
-                </h3>
-                <p className="text-4xl font-bold mb-1">KSh 50</p>
-                <p className="text-sm text-muted-foreground mb-8">per month</p>
+                  <Link href="/contact">
+                    <Button variant="outline" className="w-full">
+                      Contact Sales
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
 
-                <ul className="space-y-4 text-left mb-8">
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                    Access to 45 referrals/month
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                    Access to 10 hospitals in network
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                    Access by 10 physicians
-                  </li>
-                </ul>
+              {/* Sub-County Hospital - Most Popular */}
+              <Card className="border-2 border-primary shadow-2xl relative overflow-hidden scale-105 z-10">
+                <div className="absolute top-0 inset-x-0 bg-primary text-primary-foreground text-xs font-semibold py-1 text-center">
+                  Most Popular
+                </div>
+                <div className="p-8 text-center">
+                  <h3 className="text-2xl font-bold mb-2">
+                    Sub-County Hospital
+                  </h3>
+                  <p className="text-4xl font-bold mb-1">KSh 75,000</p>
+                  <p className="text-sm text-muted-foreground mb-8">per year</p>
 
-                <Link href="/dashboard">
-                  <Button className="w-full bg-primary hover:bg-primary/90">
-                    Choose Sub-County Plan
-                  </Button>
-                </Link>
-              </div>
-            </Card>
+                  <ul className="space-y-4 text-left mb-8">
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                      Up to 25 physicians
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                      750 referrals/month
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                      Advanced AI summarization
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                      Priority phone support
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                      Analytics dashboard
+                    </li>
+                  </ul>
 
-            {/* County Facilities */}
-            <Card className="border-2 border-muted shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
-              <div className="absolute top-0 right-0 bg-primary/10 text-primary text-xs font-semibold px-4 py-1 rounded-bl-lg">
-                Unlimited
-              </div>
-              <div className="p-8 text-center">
-                <h3 className="text-2xl font-bold mb-2">County Facilities</h3>
-                <p className="text-4xl font-bold mb-1">KSh 150</p>
-                <p className="text-sm text-muted-foreground mb-8">per month</p>
+                  <Link href="/contact">
+                    <Button className="w-full bg-primary hover:bg-primary/90">
+                      Contact Sales
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
 
-                <ul className="space-y-4 text-left mb-8">
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                    Unlimited referrals
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                    Unlimited facilities in network
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-primary" />
-                    Unlimited number of physicians
-                  </li>
-                </ul>
+              {/* County Hospital */}
+              <Card className="border-2 border-muted shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+                <div className="absolute top-0 right-0 bg-primary/10 text-primary text-xs font-semibold px-4 py-1 rounded-bl-lg">
+                  Unlimited
+                </div>
+                <div className="p-8 text-center">
+                  <h3 className="text-2xl font-bold mb-2">County Hospital</h3>
+                  <p className="text-4xl font-bold mb-1">KSh 150,000</p>
+                  <p className="text-sm text-muted-foreground mb-8">per year</p>
 
-                <Link href="/dashboard">
-                  <Button variant="outline" className="w-full">
-                    Choose County Plan
-                  </Button>
-                </Link>
-              </div>
-            </Card>
+                  <ul className="space-y-4 text-left mb-8">
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                      Unlimited physicians
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                      Unlimited referrals
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                      Premium AI features
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                      Dedicated account manager
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                      Custom integrations
+                    </li>
+                  </ul>
+
+                  <Link href="/contact">
+                    <Button variant="outline" className="w-full">
+                      Contact Sales
+                    </Button>
+                  </Link>
+                </div>
+              </Card>
+            </div>
           </div>
 
-          <div className="text-center mt-12">
+          {/* B2C - Patient Payment Model */}
+          <div className="max-w-2xl mx-auto">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 bg-accent/10 text-accent px-4 py-2 rounded-full mb-2">
+                <Users className="h-4 w-4" />
+                <span className="text-sm font-medium">B2C</span>
+              </div>
+              <h3 className="text-2xl md:text-3xl font-bold">For Patients</h3>
+              <p className="text-muted-foreground">Pay-per-referral model</p>
+            </div>
+
+            <Card className="border-2 border-accent shadow-xl overflow-hidden">
+              <div className="p-8 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-accent/10 rounded-full mb-4">
+                  <CreditCard className="h-8 w-8 text-accent" />
+                </div>
+                <h3 className="text-2xl font-bold mb-2">Referral Token</h3>
+                <p className="text-5xl font-bold text-accent mb-1">KSh 150</p>
+                <p className="text-sm text-muted-foreground mb-6">
+                  per referral
+                </p>
+
+                <p className="text-lg mb-6 max-w-md mx-auto">
+                  One-time payment covers:
+                </p>
+
+                <ul className="space-y-3 text-left max-w-sm mx-auto mb-8">
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-accent" />
+                    <span>
+                      <strong>AI summarization</strong> of your medical records
+                    </span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-accent" />
+                    <span>
+                      <strong>Physician review</strong> and referral processing
+                    </span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-accent" />
+                    <span>
+                      <strong>Digital referral</strong> to receiving facility
+                    </span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-accent" />
+                    <span>
+                      <strong>SMS/Email updates</strong> on referral status
+                    </span>
+                  </li>
+                </ul>
+
+                <p className="text-sm text-muted-foreground mb-6">
+                  Pay via M-Pesa STK push at the time of referral creation.
+                </p>
+
+                <Link href="/signup">
+                  <Button className="w-full bg-accent hover:bg-accent/90 text-white">
+                    Get Started as a Patient
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              NHIF and insurance covers accepted where available • Receipts
+              provided for claims
+            </p>
+          </div>
+
+          <div className="text-center mt-16">
             <p className="text-muted-foreground mb-4">
-              Need a custom plan for your county or large network? We offer
-              special rates.
+              Need a custom enterprise plan for your county or large network? We
+              offer special rates.
             </p>
             <Link href="/contact">
               <Button variant="link">Talk to our team →</Button>
@@ -383,16 +544,16 @@ export default function Home() {
           </h2>
           <p className="text-xl md:text-2xl opacity-90 mb-10 max-w-3xl mx-auto">
             Join facilities already using UzimaCare to deliver faster, safer,
-            and more coordinated care.
+            and more coordinated care with AI-powered intelligence.
           </p>
 
-          <Link href="/dashboard">
+          <Link href="/signup">
             <Button
               size="lg"
               variant="secondary"
               className="text-lg px-10 py-7 text-primary"
             >
-              Start Using UzimaCare Today
+              Create Your Account Today
             </Button>
           </Link>
         </div>
