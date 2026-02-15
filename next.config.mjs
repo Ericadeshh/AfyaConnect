@@ -1,16 +1,7 @@
-import path from "node:path";
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable Turbopack alias resolution (your existing config)
-  turbopack: {
-    resolveAlias: {
-      "convex/generated/*": path.join(
-        process.cwd(),
-        "../backend/convex/_generated/*",
-      ),
-    },
-  },
+  // Empty turbopack config to prevent the warning/error
+  turbopack: {},
 
   // Add webpack fallback to prevent browser build errors for Node-only modules
   webpack: (config) => {

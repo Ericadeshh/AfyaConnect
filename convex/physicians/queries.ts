@@ -2,13 +2,31 @@ import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { Doc, Id } from "../_generated/dataModel";
 
-// Get physician dashboard stats
+// Define the return type interface
+interface PhysicianDashboardStats {
+  totalReferrals: number;
+  pendingReferrals: number;
+  completedReferrals: number;
+  approvedReferrals: number;
+  aiSummaryCount: number;
+  recentActivity: Array<{
+    type: string;
+    title: string;
+    patientName: string;
+    time: string;
+    status: string;
+    statusColor: string;
+    color: string;
+  }>;
+}
+
+// Get physician dashboard stats - FIXED with explicit return type
 export const getPhysicianDashboardStats = query({
   args: {
     token: v.string(),
     physicianId: v.id("users"),
   },
-  handler: async (ctx, args): Promise<any> => {
+  handler: async (ctx, args): Promise<PhysicianDashboardStats> => {
     const session = await ctx.db
       .query("sessions")
       .withIndex("by_token", (q) => q.eq("token", args.token))
@@ -31,7 +49,7 @@ export const getPhysicianDashboardStats = query({
       )
       .collect();
 
-    // Get AI summaries count - FIXED: Remove physicianId filter since it doesn't exist
+    // Get AI summaries count
     const aiSummaries = await ctx.db.query("ai_summaries").collect();
 
     // Calculate stats
@@ -45,9 +63,9 @@ export const getPhysicianDashboardStats = query({
     const approvedReferrals = referrals.filter(
       (r) => r.status === "approved",
     ).length;
-    const aiSummaryCount = aiSummaries.length; // Total AI summaries in the system
+    const aiSummaryCount = aiSummaries.length;
 
-    // Get recent activity - FIXED: Remove AI summaries from activity
+    // Get recent activity
     const recentActivity = referrals.slice(0, 5).map((r) => ({
       type: "referral",
       title: `Referral #${r.referralNumber}`,
