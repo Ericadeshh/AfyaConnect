@@ -21,7 +21,9 @@ import {
 } from "@/components/ui/card";
 
 export default function AIDashboard() {
+  // @ts-ignore - deep type instantiation workaround
   const saveSummary = useMutation(api.functions.ai_summaries.create);
+  // @ts-ignore - deep type instantiation workaround
   const summarizeAction = useAction(api.actions.ai_summarize.summarize);
 
   const [activeTab, setActiveTab] = useState("text");
@@ -142,7 +144,7 @@ export default function AIDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-20">
+    <div className="min-h-screen bg-linear-to-b from-slate-50 to-white pb-20">
       <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-6xl pt-10">
         <Header />
         <Stats />
@@ -176,7 +178,7 @@ export default function AIDashboard() {
                 onClick={handleSubmit}
                 disabled={loading}
                 size="lg"
-                className="min-w-[180px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                className="min-w-45 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
               >
                 {loading ? (
                   <>
