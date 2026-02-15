@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation"; // Remove useSearchParams
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
@@ -22,18 +22,18 @@ import {
   Droplets,
 } from "lucide-react";
 
-export function SignUpForm() {
-  const searchParams = useSearchParams();
-  const defaultRole =
-    (searchParams.get("role") as "admin" | "physician" | "patient") ||
-    "patient";
+interface SignUpFormProps {
+  defaultRole?: "admin" | "physician" | "patient";
+}
 
+export function SignUpForm({ defaultRole = "patient" }: SignUpFormProps) {
+  // Remove useSearchParams - use prop instead
   const [formData, setFormData] = useState({
     email: "",
     password: "",
     confirmPassword: "",
     name: "",
-    role: defaultRole,
+    role: defaultRole, // Use prop directly
     phoneNumber: "",
     // Physician fields
     hospital: "",
@@ -48,7 +48,6 @@ export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
 
   const { signUp } = useAuth();
   const router = useRouter();
@@ -64,13 +63,11 @@ export function SignUpForm() {
     e.preventDefault();
     setError("");
 
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
       return;
     }
 
-    // Validate password strength
     if (formData.password.length < 8) {
       setError("Password must be at least 8 characters long");
       return;
