@@ -1,9 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Ignore TypeScript errors during build (fixes deep instantiation errors)
+  // --- This is the critical part to ignore TypeScript errors during the build ---
   typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // !! WARN !!
     ignoreBuildErrors: true,
   },
+  // --------------------------------------------------------------------------
 
   // Empty turbopack config to prevent the warning/error
   turbopack: {},

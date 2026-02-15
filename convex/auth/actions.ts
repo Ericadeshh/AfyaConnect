@@ -57,14 +57,13 @@ export const signUpWithCrypto = action({
     dateOfBirth: v.optional(v.string()),
     bloodGroup: v.optional(v.string()),
   },
-  handler: async (ctx, args): Promise<AuthResult> => {
+  handler: async (ctx: any, args: any): Promise<AuthResult> => {
     console.log("SignUp action started for:", args.email);
 
     // Hash password using Node.js crypto
     const { salt, hash } = hashPassword(args.password);
     const hashedPassword = `${salt}:${hash}`;
 
-    // Create a minimal args object
     const storeUserArgs: StoreUserArgs = {
       email: args.email,
       hashedPassword,
@@ -78,9 +77,10 @@ export const signUpWithCrypto = action({
       bloodGroup: args.bloodGroup,
     };
 
-    // Use type assertion to bypass the complex types
+    // @ts-ignore - deep type instantiation workaround
     const result = await ctx.runMutation(
-      api.auth.mutations.storeUser as any,
+      // @ts-ignore - deep type instantiation workaround
+      api.auth.mutations.storeUser,
       storeUserArgs,
     );
 
@@ -100,28 +100,27 @@ export const signInWithCrypto = action({
       v.literal("patient"),
     ),
   },
-  handler: async (ctx, args): Promise<AuthResult> => {
+  handler: async (ctx: any, args: any): Promise<AuthResult> => {
     console.log("SignIn action started for:", args.email);
 
-    // Get user from database with the specified role
     const getUserArgs: GetUserByEmailAndRoleArgs = {
       email: args.email,
       role: args.role,
     };
 
+    // @ts-ignore - deep type instantiation workaround
     const user = (await ctx.runQuery(
-      api.auth.queries.getUserByEmailAndRole as any,
+      api.auth.queries.getUserByEmailAndRole,
       getUserArgs,
     )) as AuthUser | null;
 
     if (!user) {
-      // Check if user exists with a different role
       const getUserByEmailArgs: GetUserByEmailArgs = {
         email: args.email,
       };
-
+      // @ts-ignore - deep type instantiation workaround
       const userByEmail = (await ctx.runQuery(
-        api.auth.queries.getUserByEmail as any,
+        api.auth.queries.getUserByEmail,
         getUserByEmailArgs,
       )) as AuthUser | null;
 
@@ -153,13 +152,13 @@ export const signInWithCrypto = action({
       );
     }
 
-    // Call mutation to handle successful login
     const handleLoginArgs: HandleLoginArgs = {
       userId: user._id,
     };
 
+    // @ts-ignore - deep type instantiation workaround
     const result = await ctx.runMutation(
-      api.auth.mutations.handleSuccessfulLogin as any,
+      api.auth.mutations.handleSuccessfulLogin,
       handleLoginArgs,
     );
 

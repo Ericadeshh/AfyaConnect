@@ -55,6 +55,7 @@ export default function PhysicianDashboard({
 
   // @ts-ignore
   const physicianStats = useQuery(
+    // @ts-ignore
     api.physicians.queries.getPhysicianDashboardStats,
     {
       token: token || "",
