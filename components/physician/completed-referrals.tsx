@@ -68,7 +68,7 @@ export default function CompletedReferralsPage({
             <div className="space-y-4 sm:space-y-6">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-0">
                 <div>
-                  <h2 className="text-base sm:text-xl font-semibold text-blue-700 break-words">
+                  <h2 className="text-base sm:text-xl font-semibold text-blue-700 wrap-break-word">
                     #{selectedReferral.referralNumber}
                   </h2>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-1 sm:mt-2">
@@ -256,7 +256,7 @@ export default function CompletedReferralsPage({
                         {referral.urgency}
                       </span>
                     </div>
-                    <p className="text-xs sm:text-sm text-gray-600 mb-1 break-words">
+                    <p className="text-xs sm:text-sm text-gray-600 mb-1 wrap-break-word">
                       #{referral.referralNumber}
                     </p>
                     <p className="text-xs sm:text-sm text-gray-600 mb-2">

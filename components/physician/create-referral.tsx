@@ -249,7 +249,7 @@ export default function CreateReferralPage({
 
   const renderStepIndicator = () => (
     <div className="mb-6 sm:mb-8 overflow-x-auto pb-2">
-      <div className="flex items-center justify-between min-w-[300px] sm:min-w-0 max-w-2xl mx-auto">
+      <div className="flex items-center justify-between min-w-75 sm:min-w-0 max-w-2xl mx-auto">
         {steps.map((step, index) => {
           const StepIcon = step.icon;
           const isActive = currentStep === step.id;
@@ -310,7 +310,7 @@ export default function CreateReferralPage({
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1 items-center gap-2">
             <User className="w-4 h-4 text-blue-500" /> Full Name *
           </label>
           <input
@@ -325,7 +325,7 @@ export default function CreateReferralPage({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1 items-center gap-2">
             <Calendar className="w-4 h-4 text-blue-500" /> Age *
           </label>
           <input
@@ -342,7 +342,7 @@ export default function CreateReferralPage({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1 items-center gap-2">
             <User className="w-4 h-4 text-blue-500" /> Gender *
           </label>
           <select
@@ -359,7 +359,7 @@ export default function CreateReferralPage({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1 items-center gap-2">
             <Phone className="w-4 h-4 text-blue-500" /> Contact *
           </label>
           <input
@@ -398,7 +398,7 @@ export default function CreateReferralPage({
       </h2>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+        <label className="block text-sm font-medium text-gray-700 mb-1 items-center gap-2">
           <Stethoscope className="w-4 h-4 text-blue-500" /> Diagnosis *
         </label>
         <input
@@ -413,7 +413,7 @@ export default function CreateReferralPage({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+        <label className="block text-sm font-medium text-gray-700 mb-1 items-center gap-2">
           <FileText className="w-4 h-4 text-blue-500" /> Clinical Summary *
         </label>
         <textarea
@@ -428,7 +428,7 @@ export default function CreateReferralPage({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+        <label className="text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
           <Activity className="w-4 h-4 text-blue-500" /> Reason for Referral *
         </label>
         <textarea
@@ -502,7 +502,7 @@ export default function CreateReferralPage({
 
       {/* Facility Selection with Search */}
       <div className="relative">
-        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+        <label className="block text-sm font-medium text-gray-700 mb-1 items-center gap-2">
           <Building2 className="w-4 h-4 text-blue-500" /> Facility *
         </label>
         <div className="relative">
@@ -886,7 +886,7 @@ export default function CreateReferralPage({
         {/* Error Message */}
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg flex items-center gap-2 text-sm">
-            <XCircle className="w-5 h-5 flex-shrink-0" />
+            <XCircle className="w-5 h-5 shrink-0" />
             <span>{error}</span>
           </div>
         )}
