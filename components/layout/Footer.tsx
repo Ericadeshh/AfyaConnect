@@ -222,10 +222,10 @@ export default function Footer() {
 
             <div className="flex items-center gap-4">
               {/* Developer credit - with technician icon */}
-              <span className="flex items-center gap-1.5 bg-primary/5 px-3 py-1.5 rounded-full">
+              <span className="flex items-center gap-1 bg-primary/5 px-3 py-1.5 rounded-full">
                 <UserCog className="h-3.5 w-3.5 text-primary" />
-                <span className="text-xs">Built by</span>
-                <span className="text-[10px] text-primary">
+                <span className="text-[10px] text-primary">Built by</span>
+                <span className="text-[10px] text-accent">
                   AfyaConnect( E.L, M.M)
                 </span>
               </span>
@@ -234,7 +234,7 @@ export default function Footer() {
 
               <span className="flex items-center gap-1.5">
                 <span className="text-xs">For</span>
-                <span className="text-primary font-medium bg-primary/5 px-2 py-1 rounded-full text-xs">
+                <span className="text-primary font-medium bg-primary/5 px-2 py-1 rounded-full text-[10px]">
                   Red White & Build U.S-Kenya Hackathon
                 </span>
               </span>
