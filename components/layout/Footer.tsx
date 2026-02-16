@@ -224,9 +224,9 @@ export default function Footer() {
               {/* Developer credit - with technician icon */}
               <span className="flex items-center gap-1.5 bg-primary/5 px-3 py-1.5 rounded-full">
                 <UserCog className="h-3.5 w-3.5 text-primary" />
-                <span>Built by</span>
-                <span className="text-xs text-primary">
-                  AfyaConnect(E.L, M.M)
+                <span className="text-xs">Built by</span>
+                <span className="text-[10px] text-primary">
+                  AfyaConnect( E.L, M.M)
                 </span>
               </span>
 
