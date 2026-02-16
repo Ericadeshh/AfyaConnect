@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 export default function Newsletter() {
   return (
@@ -19,11 +20,18 @@ export default function Newsletter() {
             className="bg-background border border-border focus-visible:ring-primary rounded px-4 py-2"
             required
           />
+
           <Button
             type="submit"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground min-w-35"
+            className="bg-primary text-primary-foreground
+            "
           >
             Subscribe
+            <ArrowRight
+              className="ml-2 h-4 w-4 sm:h-5 sm:w-5 
+                         transition-transform duration-200 
+                         group-hover:translate-x-1"
+            />
           </Button>
         </form>
 

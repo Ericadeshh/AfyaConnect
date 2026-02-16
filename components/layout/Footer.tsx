@@ -24,7 +24,7 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-1 lg:col-span-2">
             <Link href="/" className="inline-flex items-center space-x-2 mb-6">
               <span className="text-2xl font-bold tracking-tight">
-                <span className="text-primary">UZIMA</span>
+                <span className="text-blue-600">UZIMA</span>
                 <span className="text-foreground">CARE</span>
               </span>
             </Link>
@@ -38,7 +38,7 @@ export default function Footer() {
             {/* AI Dashboard Link */}
             <Link
               href="/dashboard/ai-dashboard"
-              className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-lg mb-6 hover:bg-primary/20 transition-all duration-300 group"
+              className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-lg mb-6 hover:bg-blue-200 transition-all duration-300 group"
             >
               <Sparkles className="h-4 w-4" />
               <span className="text-sm font-medium">
@@ -50,28 +50,28 @@ export default function Footer() {
             <div className="flex items-center gap-5">
               <a
                 href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-blue-600 transition-colors"
                 aria-label="Twitter"
               >
                 <Twitter className="h-5 w-5" />
               </a>
               <a
                 href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-blue-600 transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook className="h-5 w-5" />
               </a>
               <a
                 href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-blue-600 transition-colors"
                 aria-label="LinkedIn"
               >
                 <Linkedin className="h-5 w-5" />
               </a>
               <a
                 href="mailto:hello@uzimacare.ke"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-blue-600 transition-colors"
                 aria-label="Email"
               >
                 <Mail className="h-5 w-5" />
@@ -88,7 +88,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/#features"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-blue-600 transition-colors"
                 >
                   Features
                 </Link>
@@ -96,7 +96,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/#how-it-works"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-blue-600 transition-colors"
                 >
                   How It Works
                 </Link>
@@ -104,7 +104,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/#pricing"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-blue-600 transition-colors"
                 >
                   Pricing
                 </Link>
@@ -112,7 +112,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/dashboard"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-blue-600 transition-colors"
                 >
                   Dashboard
                 </Link>
@@ -121,7 +121,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/dashboard/ai-dashboard"
-                  className="text-primary hover:text-primary/80 font-medium flex items-center gap-1 transition-colors"
+                  className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 transition-colors"
                 >
                   <Sparkles className="h-3 w-3" />
                   AI Dashboard
@@ -139,7 +139,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/about"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-blue-600 transition-colors"
                 >
                   About Us
                 </Link>
@@ -147,7 +147,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/partnerships"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-blue-600 transition-colors"
                 >
                   Partnerships
                 </Link>
@@ -155,7 +155,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/blog"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-blue-600 transition-colors"
                 >
                   Blog
                 </Link>
@@ -163,7 +163,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/contact"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-blue-600 transition-colors"
                 >
                   Contact
                 </Link>
@@ -180,7 +180,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/privacy"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-blue-600 transition-colors"
                 >
                   Privacy Policy
                 </Link>
@@ -188,7 +188,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/terms"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-blue-600 transition-colors"
                 >
                   Terms of Service
                 </Link>
@@ -196,7 +196,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/data-protection"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-blue-600 transition-colors"
                 >
                   Data Protection
                 </Link>
@@ -204,7 +204,7 @@ export default function Footer() {
               <li>
                 <a
                   href="mailto:support@uzimacare.ke"
-                  className="text-muted-foreground hover:text-primary transition-colors"
+                  className="text-muted-foreground hover:text-blue-600 transition-colors"
                 >
                   Support
                 </a>
@@ -222,10 +222,10 @@ export default function Footer() {
 
             <div className="flex items-center gap-4">
               {/* Developer credit - with technician icon */}
-              <span className="flex items-center gap-1 bg-primary/5 px-3 py-1.5 rounded-full">
-                <UserCog className="h-3.5 w-3.5 text-primary" />
-                <span className="text-[10px] text-primary">Built by</span>
-                <span className="text-[10px] text-accent">
+              <span className="flex items-center gap-1 bg-blue-100 px-3 py-1.5 rounded-full">
+                <UserCog className="h-3.5 w-3.5 text-blue-600" />
+                <span className="text-[10px] text-blue-700">Built by</span>
+                <span className="text-[10px] text-blue-600">
                   AfyaConnect( E.L, M.M)
                 </span>
               </span>
@@ -234,7 +234,7 @@ export default function Footer() {
 
               <span className="flex items-center gap-1.5">
                 <span className="text-xs">For</span>
-                <span className="text-primary font-medium bg-primary/5 px-2 py-1 rounded-full text-[10px]">
+                <span className="text-blue-600 font-medium bg-blue-100 px-2 py-1 rounded-full text-[10px]">
                   Red White & Build U.S-Kenya Hackathon
                 </span>
               </span>
