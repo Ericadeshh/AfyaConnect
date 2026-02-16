@@ -225,7 +225,9 @@ export default function Footer() {
               <span className="flex items-center gap-1.5 bg-primary/5 px-3 py-1.5 rounded-full">
                 <UserCog className="h-3.5 w-3.5 text-primary" />
                 <span>Built by</span>
-                <span className="font-small text-primary">Eric Lumumba</span>
+                <span className="text-xs text-primary">
+                  AfyaConnect(E.L, M.M)
+                </span>
               </span>
 
               <span className="text-xs text-muted-foreground">|</span>
