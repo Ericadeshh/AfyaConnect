@@ -40,7 +40,7 @@ export default function Home() {
               <Link href="/signup" className="w-full sm:w-auto">
                 <Button
                   variant="outline"
-                  className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 border-gray-300 hover:border-blue-600 text-blue-600 hover:text-blue-600 bg-blue-600"
+                  className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 border-gray-300 hover:border-blue-600 text-blue-600 hover:text-white bg-blue-600"
                 >
                   Get Started{" "}
                   <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
