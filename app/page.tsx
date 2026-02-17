@@ -38,10 +38,7 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
               <Link href="/signup" className="w-full sm:w-auto">
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 border-gray-300 hover:border-blue-600 text-blue-600 hover:text-white bg-blue-600"
-                >
+                <Button className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 bg-blue-600 hover:bg-blue-700 text-white">
                   Get Started{" "}
                   <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                 </Button>
@@ -50,7 +47,7 @@ export default function Home() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 border-gray-300 hover:border-blue-600 text-white hover:text-blue-600 bg-black"
+                  className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 border-gray-300 hover:border-blue-600 text-white hover:text-blue-600 bg-accent"
                 >
                   Learn More
                 </Button>
@@ -500,7 +497,7 @@ export default function Home() {
                 </p>
 
                 <Link href="/signup">
-                  <Button className="border-gray-700 hover:border-purple-600 text-white hover:text-white bg-primary">
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">
                     Get Started as a Patient
                   </Button>
                 </Link>
