@@ -10,10 +10,10 @@ export default function ContactPage() {
         <div className="absolute inset-0 bg-grid-slate-900/[0.02] dark:bg-grid-slate-100/[0.02]" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8">
-              Get in <span className="text-primary">Touch</span>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 text-blue-900">
+              Get in <span className="text-blue-600">Touch</span>
             </h1>
-            <p className="text-xl md:text-2xl lg:text-3xl text-muted-foreground font-medium max-w-4xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl lg:text-3xl text-blue-700/70 font-medium max-w-4xl mx-auto leading-relaxed">
               We're here to help — whether you're a clinician, facility manager,
               partner, or just curious about UzimaCare.
             </p>
@@ -28,7 +28,7 @@ export default function ContactPage() {
             {/* Left: Rich Contact Details */}
             <div className="space-y-12">
               <div>
-                <h2 className="text-3xl md:text-4xl font-bold mb-8">
+                <h2 className="text-3xl md:text-4xl font-bold mb-8 text-blue-900">
                   Let's Start a Conversation
                 </h2>
                 <p className="text-lg text-muted-foreground leading-relaxed mb-10">
@@ -42,15 +42,17 @@ export default function ContactPage() {
               <div className="space-y-8">
                 {/* Email */}
                 <div className="flex items-start gap-6">
-                  <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <Mail className="h-7 w-7 text-primary" />
+                  <div className="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                    <Mail className="h-7 w-7 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold mb-2">Email Us</h3>
+                    <h3 className="text-xl font-semibold mb-2 text-blue-800">
+                      Email Us
+                    </h3>
                     <p className="text-lg">
                       <a
                         href="mailto:ericadeshh@gmail.com"
-                        className="text-primary hover:underline font-medium"
+                        className="text-blue-600 hover:underline font-medium"
                       >
                         uzimacare@gmail.com
                       </a>
@@ -63,14 +65,14 @@ export default function ContactPage() {
 
                 {/* Phone / WhatsApp */}
                 <div className="flex items-start gap-6">
-                  <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                    <Phone className="h-7 w-7 text-accent" />
+                  <div className="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                    <Phone className="h-7 w-7 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className=" text-xl font-semibold mb-2">
+                    <h3 className="text-xl font-semibold mb-2 text-blue-800">
                       Phone / WhatsApp
                     </h3>
-                    <p className="text-lg text-primary font-medium">
+                    <p className="text-lg text-blue-600 font-medium">
                       +254 741 091661
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
@@ -84,12 +86,14 @@ export default function ContactPage() {
 
                 {/* Location */}
                 <div className="flex items-start gap-6">
-                  <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <MapPin className="h-7 w-7 text-primary" />
+                  <div className="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                    <MapPin className="h-7 w-7 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold mb-2">Location</h3>
-                    <p className="text-lg text-primary">
+                    <h3 className="text-xl font-semibold mb-2 text-blue-800">
+                      Location
+                    </h3>
+                    <p className="text-lg text-blue-600">
                       Nairobi, Kenya (Virtual-first team)
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
@@ -104,12 +108,12 @@ export default function ContactPage() {
                     <Clock className="h-7 w-7 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold mb-2">
+                    <h3 className="text-xl font-semibold mb-2 text-blue-800">
                       Our Response Commitment
                     </h3>
                     <p className="text-muted-foreground">
                       We aim to reply to every message within{" "}
-                      <strong className="text-foreground">24 hours</strong>.
+                      <strong className="text-blue-800">24 hours</strong>.
                       Urgent facility onboarding or partnership inquiries are
                       prioritized and often answered same-day.
                     </p>
@@ -120,8 +124,8 @@ export default function ContactPage() {
 
             {/* Right: Contact Form */}
             <div className="bg-linear-to-br from-muted/30 to-background p-8 md:p-10 rounded-2xl border shadow-sm">
-              <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
-                <MessageSquare className="h-8 w-8 text-primary" />
+              <h2 className="text-3xl font-bold mb-8 flex items-center gap-3 text-blue-900">
+                <MessageSquare className="h-8 w-8 text-blue-600" />
                 Send a Message
               </h2>
 
@@ -130,7 +134,7 @@ export default function ContactPage() {
                   <div>
                     <label
                       htmlFor="name"
-                      className="block text-sm font-medium mb-2"
+                      className="block text-sm font-medium mb-2 text-blue-800"
                     >
                       Full Name <span className="text-destructive">*</span>
                     </label>
@@ -138,14 +142,14 @@ export default function ContactPage() {
                       id="name"
                       placeholder="Dr. Jane Doe / Facility Manager"
                       required
-                      className="h-12 w-full px-4 py-3 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="h-12 w-full px-4 py-3 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-600"
                     />
                   </div>
 
                   <div>
                     <label
                       htmlFor="email"
-                      className="block text-sm font-medium mb-2"
+                      className="block text-sm font-medium mb-2 text-blue-800"
                     >
                       Email Address <span className="text-destructive">*</span>
                     </label>
@@ -154,7 +158,7 @@ export default function ContactPage() {
                       type="email"
                       placeholder="your.name@facility.ke"
                       required
-                      className="h-12 w-full px-4 py-3 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="h-12 w-full px-4 py-3 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-600"
                     />
                   </div>
                 </div>
@@ -162,7 +166,7 @@ export default function ContactPage() {
                 <div>
                   <label
                     htmlFor="phone"
-                    className="block text-sm font-medium mb-2"
+                    className="block text-sm font-medium mb-2 text-blue-800"
                   >
                     Phone / WhatsApp Number
                   </label>
@@ -170,14 +174,14 @@ export default function ContactPage() {
                     id="phone"
                     type="tel"
                     placeholder="+254 7XX XXX XXX (optional but recommended)"
-                    className="h-12 w-full px-4 py-3 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="h-12 w-full px-4 py-3 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="subject"
-                    className="block text-sm font-medium mb-2"
+                    className="block text-sm font-medium mb-2 text-blue-800"
                   >
                     Subject / Topic <span className="text-destructive">*</span>
                   </label>
@@ -185,14 +189,14 @@ export default function ContactPage() {
                     id="subject"
                     placeholder="Partnership inquiry / Facility pilot interest / Technical question / Other"
                     required
-                    className="h-12 w-full px-4 py-3 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="h-12 w-full px-4 py-3 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="message"
-                    className="block text-sm font-medium mb-2"
+                    className="block text-sm font-medium mb-2 text-blue-800"
                   >
                     Your Message <span className="text-destructive">*</span>
                   </label>
@@ -201,7 +205,7 @@ export default function ContactPage() {
                     placeholder="Tell us about your facility, your needs, or any questions you have about UzimaCare..."
                     rows={7}
                     required
-                    className="resize-none w-full px-4 py-3 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="resize-none w-full px-4 py-3 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
 
@@ -209,7 +213,7 @@ export default function ContactPage() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full bg-primary hover:bg-primary/90 h-14 text-lg font-medium"
+                    className="w-full bg-blue-600 hover:bg-blue-700 h-14 text-lg font-medium"
                   >
                     <Send className="mr-3 h-5 w-5" />
                     Send Message
@@ -229,7 +233,7 @@ export default function ContactPage() {
       {/* Final Trust / CTA */}
       <section className="py-16 md:py-24 bg-muted/20">
         <div className="container mx-auto px-4 text-center">
-          <h3 className="text-2xl md:text-3xl font-bold mb-6">
+          <h3 className="text-2xl md:text-3xl font-bold mb-6 text-blue-900">
             We're excited to hear from you
           </h3>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-10">
@@ -237,7 +241,11 @@ export default function ContactPage() {
             just want more information — our team is standing by.
           </p>
           <a href="mailto:ericadeshh@gmail.com">
-            <Button variant="outline" size="lg" className="min-w-60">
+            <Button
+              variant="outline"
+              size="lg"
+              className="min-w-60 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300"
+            >
               Email us directly → uzimacare@gmail.com
             </Button>
           </a>

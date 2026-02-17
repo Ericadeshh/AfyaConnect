@@ -22,10 +22,10 @@ export default function AboutPage() {
         <div className="absolute inset-0 bg-grid-slate-900/[0.03] dark:bg-grid-slate-100/[0.02]" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8">
-              About <span className="text-primary">UzimaCare</span>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 text-blue-900">
+              About <span className="text-blue-600">UzimaCare</span>
             </h1>
-            <p className="text-xl md:text-2xl lg:text-3xl text-muted-foreground font-medium max-w-4xl mx-auto leading-relaxed">
+            <p className="text-xl md:text-2xl lg:text-3xl text-blue-700/70 font-medium max-w-4xl mx-auto leading-relaxed">
               Transforming healthcare access in Kenya through secure, real-time,
               and inclusive digital referral systems.
             </p>
@@ -38,7 +38,7 @@ export default function AboutPage() {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-8">
+              <h2 className="text-4xl md:text-5xl font-bold mb-8 text-blue-900">
                 The Challenge in Kenya's Referral System
               </h2>
 
@@ -53,7 +53,7 @@ export default function AboutPage() {
                   <li className="flex items-start gap-4">
                     <GiCheckMark className="h-5 w-5 text-primary shrink-0 mt-1" />
                     <span>
-                      <strong className="text-foreground">
+                      <strong className="text-blue-800">
                         Paper-based letters
                       </strong>{" "}
                       are frequently lost, illegible, or arrive too late
@@ -62,7 +62,7 @@ export default function AboutPage() {
                   <li className="flex items-start gap-4">
                     <GiCheckMark className="h-5 w-5 text-primary shrink-0 mt-1" />
                     <span>
-                      <strong className="text-foreground">
+                      <strong className="text-blue-800">
                         No real-time tracking
                       </strong>{" "}
                       — patients and referring clinicians often have no idea
@@ -73,7 +73,7 @@ export default function AboutPage() {
                     <GiCheckMark className="h-5 w-5 text-primary shrink-0 mt-1" />
                     <span>
                       Critical{" "}
-                      <strong className="text-foreground">
+                      <strong className="text-blue-800">
                         patient history and test results
                       </strong>{" "}
                       are not reliably transferred
@@ -83,7 +83,7 @@ export default function AboutPage() {
                     <GiCheckMark className="h-5 w-5 text-primary shrink-0 mt-1" />
                     <span>
                       Long delays contribute to{" "}
-                      <strong className="text-foreground">
+                      <strong className="text-blue-800">
                         worsening conditions
                       </strong>
                       , avoidable complications, and increased mortality
@@ -94,12 +94,12 @@ export default function AboutPage() {
             </div>
 
             <Card className="p-8 lg:p-10 shadow-2xl border-none bg-linear-to-br from-primary/5 to-accent/5">
-              <h3 className="text-3xl font-bold mb-8 text-primary">
+              <h3 className="text-3xl font-bold mb-8 text-blue-700">
                 Our Purpose
               </h3>
               <p className="text-xl leading-relaxed mb-8">
                 UzimaCare was created to close this critical gap — building a{" "}
-                <strong>
+                <strong className="text-blue-800">
                   simple, secure, mobile-friendly digital referral platform
                 </strong>{" "}
                 that works even in low-connectivity environments.
@@ -117,7 +117,7 @@ export default function AboutPage() {
       {/* Core Values & Commitment – New Section */}
       <section className="py-20 md:py-32 bg-muted/30">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16 text-blue-900">
             Our Core Values & Commitment
           </h2>
 
@@ -157,7 +157,9 @@ export default function AboutPage() {
                 >
                   <item.icon className="h-8 w-8" />
                 </div>
-                <h3 className="text-2xl font-bold mb-4">{item.title}</h3>
+                <h3 className="text-2xl font-bold mb-4 text-blue-800">
+                  {item.title}
+                </h3>
                 <p className="text-muted-foreground leading-relaxed">
                   {item.desc}
                 </p>
@@ -172,7 +174,7 @@ export default function AboutPage() {
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="order-2 lg:order-1">
-              <h2 className="text-4xl md:text-5xl font-bold mb-8">
+              <h2 className="text-4xl md:text-5xl font-bold mb-8 text-blue-900">
                 Built For Every Level of Care
               </h2>
 
@@ -182,7 +184,7 @@ export default function AboutPage() {
                     <Building2 className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-1.9xl font-semibold mb-2">
+                    <h3 className="text-1.9xl font-semibold mb-2 text-blue-800">
                       From Dispensary to National Hospital
                     </h3>
                     <p className="text-muted-foreground">
@@ -198,7 +200,7 @@ export default function AboutPage() {
                     <Clock className="h-6 w-6 text-accent" />
                   </div>
                   <div>
-                    <h3 className="text-1.9xl font-semibold mb-2">
+                    <h3 className="text-1.9xl font-semibold mb-2 text-blue-800">
                       Time-Sensitive & Life-Saving
                     </h3>
                     <p className="text-muted-foreground">
@@ -213,7 +215,7 @@ export default function AboutPage() {
                     <Smartphone className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-1.9xl font-semibold mb-2">
+                    <h3 className="text-1.9xl font-semibold mb-2 text-blue-800">
                       Accessible Technology
                     </h3>
                     <p className="text-muted-foreground">
@@ -227,7 +229,7 @@ export default function AboutPage() {
 
             <div className="order-1 lg:order-2">
               <Card className="p-10 shadow-2xl border-none bg-linear-to-br from-primary/5 via-background to-accent/5">
-                <h3 className="text-4xl font-bold mb-8 text-primary">
+                <h3 className="text-4xl font-bold mb-8 text-blue-700">
                   Our Long-Term Vision
                 </h3>
                 <p className="text-1.9xl leading-relaxed mb-8">
@@ -247,12 +249,12 @@ export default function AboutPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 md:py-32 bg-primary text-primary-foreground">
+      <section className="py-20 md:py-32 bg-blue-600 text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-8">
             Join Us in Building Better Healthcare
           </h2>
-          <p className="text-xl md:text-2xl opacity-90 mb-12 max-w-4xl mx-auto">
+          <p className="text-xl md:text-2xl opacity-90 mb-12 max-w-4xl mx-auto text-blue-50">
             Whether you're a clinician, facility administrator, policymaker,
             partner, or patient advocate — we'd love to hear from you.
           </p>
@@ -262,7 +264,7 @@ export default function AboutPage() {
               <Button
                 size="lg"
                 variant="secondary"
-                className="text-xl py-7 px-12 text-primary"
+                className="text-xl py-7 px-12 text-blue-700 bg-white hover:bg-blue-50"
               >
                 Contact the Team <ArrowRight className="ml-3 h-6 w-6" />
               </Button>
@@ -270,7 +272,7 @@ export default function AboutPage() {
             <Link href="/dashboard">
               <Button
                 size="lg"
-                className="bg-white/20 hover:bg-white/30 text-xl py-7 px-12 backdrop-blur-sm"
+                className="bg-white/20 hover:bg-white/30 text-xl py-7 px-12 backdrop-blur-sm text-white border-2 border-white/50 hover:border-white"
               >
                 Try the Platform
               </Button>
