@@ -17,14 +17,13 @@ export default function Newsletter() {
           <input
             type="email"
             placeholder="your.email@example.com"
-            className="bg-background border border-border focus-visible:ring-primary rounded px-4 py-2"
+            className="bg-background border border-border focus-visible:ring-primary rounded px-4 py-2 flex-1"
             required
           />
 
           <Button
             type="submit"
-            className="bg-primary text-primary-foreground
-            "
+            className="bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300 group"
           >
             Subscribe
             <ArrowRight
