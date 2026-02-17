@@ -38,12 +38,10 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
               <Link href="/signup" className="w-full sm:w-auto">
-                <Link href="/signup" className="w-full sm:w-auto">
-                  <Button className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
-                    Get Started{" "}
-                    <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-                  </Button>
-                </Link>
+                <Button className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
+                  Get Started{" "}
+                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                </Button>
               </Link>
               <Link href="/about" className="w-full sm:w-auto">
                 <Button
@@ -499,7 +497,7 @@ export default function Home() {
                 </p>
 
                 <Link href="/signup">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button className="bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
                     Get Started as a Patient
                   </Button>
                 </Link>
