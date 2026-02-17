@@ -38,16 +38,18 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
               <Link href="/signup" className="w-full sm:w-auto">
-                <Button className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 bg-blue-600 hover:bg-blue-700 text-white">
-                  Get Started{" "}
-                  <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-                </Button>
+                <Link href="/signup" className="w-full sm:w-auto">
+                  <Button className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300">
+                    Get Started{" "}
+                    <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
+                  </Button>
+                </Link>
               </Link>
               <Link href="/about" className="w-full sm:w-auto">
                 <Button
                   size="lg"
                   variant="outline"
-                  className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 border-gray-300 hover:border-blue-600 text-white hover:text-blue-600 bg-accent"
+                  className="w-full sm:w-auto text-base sm:text-lg px-6 sm:px-8 border-gray-300 hover:border-blue-600 text-white hover:text-blue-600 bg-black"
                 >
                   Learn More
                 </Button>
