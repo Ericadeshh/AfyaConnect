@@ -74,12 +74,12 @@ export class MpesaClient {
       );
 
       const urls = MPESA_API_URLS[this.config.environment];
+
+      // Clean the phone number - remove any non-digit characters
       const phoneNumber = params.phoneNumber.replace(/\D/g, "");
 
-      const transactionDesc =
-        typeof params.paymentType === "string"
-          ? params.paymentType
-          : String(params.paymentType);
+      // Convert paymentType to string for description and ensure it's lowercase
+      const transactionDesc = String(params.paymentType).toLowerCase();
 
       const requestBody: STKPushRequest = {
         businessShortCode: this.config.businessShortCode,
@@ -89,7 +89,7 @@ export class MpesaClient {
         amount: params.amount,
         partyA: phoneNumber,
         partyB: this.config.businessShortCode,
-        phoneNumber,
+        phoneNumber: phoneNumber,
         callBackURL: this.config.callbackUrl,
         accountReference: (params.relatedEntityId || "UZIMACARE").substring(
           0,
@@ -98,7 +98,11 @@ export class MpesaClient {
         transactionDesc: transactionDesc.substring(0, 12),
       };
 
-      console.log("Sending STK push request to M-Pesa...");
+      console.log("Sending STK push request to M-Pesa...", {
+        amount: params.amount,
+        phoneNumber: phoneNumber,
+        environment: this.config.environment,
+      });
 
       const response = await fetch(urls.STK_PUSH, {
         method: "POST",

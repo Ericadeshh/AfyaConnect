@@ -1,3 +1,4 @@
+// src/lib/mpesa/types.ts
 import { PAYMENT_STATUS, PAYMENT_TYPES, TRANSACTION_TYPES } from "./constants";
 
 export interface MpesaConfig {
@@ -62,7 +63,7 @@ export interface PaymentRecord {
   phoneNumber: string;
   userId?: string;
   facilityId?: string;
-  paymentType: keyof typeof PAYMENT_TYPES;
+  paymentType: string; // Change to string to accept any value
   status: keyof typeof PAYMENT_STATUS;
   mpesaReceiptNumber?: string;
   transactionDate?: string;
@@ -88,7 +89,7 @@ export interface SubscriptionPlan {
 export interface InitiatePaymentParams {
   amount: number;
   phoneNumber: string;
-  paymentType: keyof typeof PAYMENT_TYPES;
+  paymentType: string; // Change to string to accept any value
   userId?: string;
   facilityId?: string;
   relatedEntityId?: string;

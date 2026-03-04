@@ -30,7 +30,6 @@ import type * as migrations_userMigrations from "../migrations/userMigrations.js
 import type * as payments_index from "../payments/index.js";
 import type * as payments_mutations from "../payments/mutations.js";
 import type * as payments_queries from "../payments/queries.js";
-import type * as payments_test from "../payments/test.js";
 import type * as physicians_queries from "../physicians/queries.js";
 import type * as receivingFacility_helpers from "../receivingFacility/helpers.js";
 import type * as receivingFacility_index from "../receivingFacility/index.js";
@@ -73,7 +72,6 @@ declare const fullApi: ApiFromModules<{
   "payments/index": typeof payments_index;
   "payments/mutations": typeof payments_mutations;
   "payments/queries": typeof payments_queries;
-  "payments/test": typeof payments_test;
   "physicians/queries": typeof physicians_queries;
   "receivingFacility/helpers": typeof receivingFacility_helpers;
   "receivingFacility/index": typeof receivingFacility_index;
