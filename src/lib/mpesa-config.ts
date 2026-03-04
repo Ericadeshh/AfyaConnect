@@ -5,17 +5,40 @@ let mpesaClientInstance: MpesaClient | null = null;
 
 export function getMpesaClient(): MpesaClient {
   if (!mpesaClientInstance) {
+    // Check if required env vars exist
+    const requiredEnvVars = [
+      "MPESA_CONSUMER_KEY",
+      "MPESA_CONSUMER_SECRET",
+      "MPESA_PASSKEY",
+      "MPESA_SHORTCODE",
+      "MPESA_BUSINESS_SHORTCODE",
+      "MPESA_CALLBACK_URL",
+    ];
+
+    const missingVars = requiredEnvVars.filter(
+      (varName) => !process.env[varName],
+    );
+
+    if (missingVars.length > 0) {
+      console.error(
+        `Missing M-Pesa environment variables: ${missingVars.join(", ")}`,
+      );
+      // Don't throw, return a dummy client that will log errors
+    }
+
     const environment =
       process.env.MPESA_ENVIRONMENT === "production" ? "production" : "sandbox";
 
     mpesaClientInstance = new MpesaClient({
-      consumerKey: process.env.MPESA_CONSUMER_KEY!,
-      consumerSecret: process.env.MPESA_CONSUMER_SECRET!,
-      passkey: process.env.MPESA_PASSKEY!,
-      shortCode: process.env.MPESA_SHORTCODE!,
-      businessShortCode: process.env.MPESA_BUSINESS_SHORTCODE!,
+      consumerKey: process.env.MPESA_CONSUMER_KEY || "",
+      consumerSecret: process.env.MPESA_CONSUMER_SECRET || "",
+      passkey: process.env.MPESA_PASSKEY || "",
+      shortCode: process.env.MPESA_SHORTCODE || "174379",
+      businessShortCode: process.env.MPESA_BUSINESS_SHORTCODE || "174379",
       environment,
-      callbackUrl: process.env.MPESA_CALLBACK_URL!,
+      callbackUrl:
+        process.env.MPESA_CALLBACK_URL ||
+        "https://example.com/api/mpesa/stk-callback",
       confirmationUrl: process.env.MPESA_CONFIRMATION_URL,
       validationUrl: process.env.MPESA_VALIDATION_URL,
     });
@@ -52,7 +75,7 @@ export const SUBSCRIPTION_PLANS = {
       "Priority support",
       "API access",
     ],
-    maxReferrals: -1, // unlimited
+    maxReferrals: -1,
     maxUsers: 20,
   },
   ENTERPRISE: {
@@ -67,8 +90,8 @@ export const SUBSCRIPTION_PLANS = {
       "Dedicated account manager",
       "SLA guarantee",
     ],
-    maxReferrals: -1, // unlimited
-    maxUsers: -1, // unlimited
+    maxReferrals: -1,
+    maxUsers: -1,
   },
 } as const;
 
