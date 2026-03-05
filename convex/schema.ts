@@ -202,7 +202,7 @@ export default defineSchema({
     .index("by_facilityId", ["facilityId"])
     .index("by_name", ["name"]),
 
-  // Admin Actions Log - FIXED with union for targetId
+  // Admin Actions Log
   adminLogs: defineTable({
     adminId: v.id("users"),
     action: v.string(),
@@ -225,12 +225,12 @@ export default defineSchema({
     .index("by_targetType", ["targetType"])
     .index("by_timestamp", ["timestamp"]),
 
-  // ============= NEW TABLES FOR RECEIVING FACILITY =============
+  // ============= RECEIVING FACILITY TABLES =============
 
-  // Clinic Schedule - for managing available days and patient limits
+  // Clinic Schedule
   clinicSchedule: defineTable({
     facilityId: v.id("facilities"),
-    date: v.string(), // ISO date string
+    date: v.string(),
     isOpen: v.boolean(),
     maxPatients: v.number(),
     currentBookings: v.number(),
@@ -243,18 +243,18 @@ export default defineSchema({
     .index("by_facilityId_and_date", ["facilityId", "date"])
     .index("by_date", ["date"]),
 
-  // Patient Outcomes - for final diagnoses after receiving
+  // Patient Outcomes
   patientOutcomes: defineTable({
     referralId: v.id("referrals"),
     facilityId: v.id("facilities"),
-    physicianId: v.id("users"), // receiving physician
+    physicianId: v.id("users"),
     finalDiagnosis: v.string(),
     treatmentGiven: v.optional(v.string()),
     requiresFurtherReferral: v.boolean(),
     furtherReferralFacility: v.optional(v.string()),
     furtherReferralReason: v.optional(v.string()),
     furtherReferralCreated: v.optional(v.boolean()),
-    newReferralId: v.optional(v.id("referrals")), // if further referral created
+    newReferralId: v.optional(v.id("referrals")),
     notes: v.optional(v.string()),
     outcomeDate: v.string(),
     createdAt: v.string(),
@@ -265,7 +265,7 @@ export default defineSchema({
     .index("by_physicianId", ["physicianId"])
     .index("by_outcomeDate", ["outcomeDate"]),
 
-  // Facility Events - for calendar events (admin only)
+  // Facility Events
   facilityEvents: defineTable({
     facilityId: v.id("facilities"),
     title: v.string(),
@@ -288,52 +288,25 @@ export default defineSchema({
     .index("by_facilityId_and_date", ["facilityId", "startDate"])
     .index("by_date_range", ["startDate", "endDate"]),
 
-  // ============= PAYMENT TABLES =============
-
-  // Payment Transactions
+  // ============= SIMPLIFIED PAYMENT TABLE (Based on working app) =============
   payments: defineTable({
-    transactionId: v.optional(v.string()),
-    reference: v.string(),
     amount: v.number(),
     phoneNumber: v.string(),
-    userId: v.optional(v.id("users")),
-    facilityId: v.optional(v.id("facilities")),
-    paymentType: v.union(
-      v.literal("booking"),
-      v.literal("subscription"),
-      v.literal("onboarding"),
-      v.literal("referral_fee"),
-      v.literal("wallet_topup"),
-    ),
+    transactionId: v.optional(v.string()),
+    checkoutRequestId: v.optional(v.string()),
     status: v.union(
       v.literal("pending"),
       v.literal("completed"),
       v.literal("failed"),
-      v.literal("cancelled"),
-      v.literal("expired"),
     ),
-    mpesaReceiptNumber: v.optional(v.string()),
-    transactionDate: v.optional(v.string()),
-    checkoutRequestID: v.optional(v.string()),
-    merchantRequestID: v.optional(v.string()),
-    responseCode: v.optional(v.string()),
-    responseDescription: v.optional(v.string()),
-    relatedEntityId: v.optional(v.string()),
-    relatedEntityType: v.optional(v.string()),
-    metadata: v.optional(v.any()),
-    stkCallback: v.optional(v.any()),
-    createdAt: v.string(),
-    updatedAt: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
   })
-    .index("by_transactionId", ["transactionId"])
-    .index("by_reference", ["reference"])
-    .index("by_userId", ["userId"])
-    .index("by_facilityId", ["facilityId"])
+    .index("by_phone", ["phoneNumber"])
     .index("by_status", ["status"])
-    .index("by_paymentType", ["paymentType"])
-    .index("by_checkoutRequestID", ["checkoutRequestID"]),
+    .index("by_checkoutRequestId", ["checkoutRequestId"]),
 
-  // Facility Subscriptions
+  // Facility Subscriptions (keep if needed)
   facilitySubscriptions: defineTable({
     facilityId: v.id("facilities"),
     planId: v.string(),
@@ -366,7 +339,7 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_nextBillingDate", ["nextBillingDate"]),
 
-  // Patient Wallets
+  // Patient Wallets (keep if needed)
   patientWallets: defineTable({
     userId: v.id("users"),
     balance: v.number(),
@@ -380,7 +353,7 @@ export default defineSchema({
     updatedAt: v.string(),
   }).index("by_userId", ["userId"]),
 
-  // Invoices
+  // Invoices (keep if needed)
   invoices: defineTable({
     invoiceNumber: v.string(),
     userId: v.optional(v.id("users")),

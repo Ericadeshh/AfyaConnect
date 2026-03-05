@@ -1,4 +1,4 @@
-// M-Pesa API Constants
+// src/lib/mpesa/constants.ts
 export const MPESA_ENV = {
   SANDBOX: "sandbox",
   PRODUCTION: "production",

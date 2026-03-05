@@ -1,3 +1,4 @@
+// src/lib/mpesa/utils.ts
 import crypto from "crypto";
 
 export function generateTimestamp(): string {
@@ -27,20 +28,14 @@ export function generateReference(prefix: string = "UZ"): string {
 }
 
 export function formatPhoneNumber(phone: string): string {
-  // Remove any non-numeric characters
   let cleaned = phone.replace(/\D/g, "");
 
-  // If it starts with 0, replace with 254
   if (cleaned.startsWith("0")) {
     cleaned = "254" + cleaned.substring(1);
-  }
-
-  // If it doesn't start with 254, add it
-  else if (!cleaned.startsWith("254")) {
+  } else if (!cleaned.startsWith("254")) {
     cleaned = "254" + cleaned;
   }
 
-  // Ensure it's exactly 12 digits (254 + 9 digits)
   if (cleaned.length > 12) {
     cleaned = cleaned.substring(0, 12);
   }

@@ -1,50 +1,25 @@
-1. landing page
--add AI -Powered description/feature
--update pricing with (b2b, b2c)
+Great, now for the next step, I need you to handle the payments done in the following ways:
+1. create a payment status page, such that:
+-If payment is successful, a successful pop-up is displayed, and payment referral details are shown. These details should include (patient's name/ID, amount, receiving facility, sending facility(where the referral is made, time, other important details)
+-a payment is not successful(wrongly made, canceled, insufficient amount on end-user), then return to the payment page. 
 
-2. Integrate AI on physician's dashboard
+2. create a payment history dashboard, ensure it comprehensive in the following ways:
+-Both physician and admin can access it, 
+-should display all the details of the referral transaction, from the successful referral feedback and other important information that are of relevance,
+-use stats, cards, a chart, maybe a figure or medical related analysis metrics that are of importance and relevance,
+-be simple, modern, aesthetic and smooth,
 
-3. fix feedack messages for login/signup
+I am going to send files for Physician and Admin, which will be quite a long list, but you should analyze each one of them in order to create the two requests above.
 
-4. admin dashboard, physician mgt, add "view physicians', 'manage physician'
+ON THE PHYSICIAN:
+Here's what to take note of:
+-The user/person in-charge of making referrals is the PHYISICIAN ONLY. 
+-So I am going to provide files for physician, then you will update as follows:
+(i) Inspect the referral creation form to find out where the service for making payment( section with a button) should be placed. In my opinion, it should come after the referral details have been created, as the last step then referral process is complete.
+(ii)analyze the logic in which the physician's user character is implemented, how the convex and src files are setup to enable communication between backend and frontend, allowing real-time interaction with the convex database,  to fetch/display/process data between frontend and backend smoothly-this logic and implementation should be followed to create the requests above.
+(iii) You can add information on the pages that there is safaricom mobile payment service.
 
-I am working on a project called UzimaCare. It is a digital hospital referral system aimed at automating patient referrals from low level hospitals to high level hospital, eliminating the old style paper-based method that should be legacy.
-
-
-
-Before you continue from 4. Subscription Management, convex/subscriptions/mutations.ts, 
-I have a few concerns:
-on D:\Documents\CODE_WITH_ERICADESHH\GitHub\UzimaCare-main\src\lib\mpesa\client.ts
--I am using nextjs that probably comes with nextjs routers for the project, do I still need axios, my other projects are working without it seemingly. Please clarify and advice on this part.
-
-Getting the following syntax highlights from D:\Documents\CODE_WITH_ERICADESHH\GitHub\UzimaCare-main\convex\payments\mutations.ts
-
-Type 'string | undefined' is not assignable to type 'Id<"facilities"> | Id<"referrals"> | Id<"physicianReferrals"> | Id<"bookings"> | undefined'.
-  Type 'string' is not assignable to type 'Id<"facilities"> | Id<"referrals"> | Id<"physicianReferrals"> | Id<"bookings"> | undefined'.
-
-Type 'string | undefined' is not assignable to type '"facility" | "referral" | "booking" | "physicianReferral" | undefined'.
-  Type 'string' is not assignable to type '"facility" | "referral" | "booking" | "physicianReferral" | undefined'.
-
-
-Type '"booking" | "subscription" | "onboarding" | "referral_fee" | "wallet_topup"' is not assignable to type '"BOOKING" | "SUBSCRIPTION" | "ONBOARDING" | "REFERRAL_FEE" | "WALLET_TOPUP"'.
-  Type '"booking"' is not assignable to type '"BOOKING" | "SUBSCRIPTION" | "ONBOARDING" | "REFERRAL_FEE" | "WALLET_TOPUP"'. Did you mean '"BOOKING"'?
-
-Object literal may only specify known properties, and 'paymentStatus' does not exist in type 'PatchValue<{ _id: Id<"payments">; _creationTime: number; userId?: Id<"users"> | undefined; facilityId?: Id<"facilities"> | undefined; transactionId?: string | undefined; mpesaReceiptNumber?: string | undefined; ... 15 more ...; paymentType: "booking" | ... 3 more ... | "wallet_topup"; } | ... 13 more ... | { ...; }>'.
-
-
-Property 'stkSentCount' does not exist on type '{ _id: Id<"payments">; _creationTime: number; userId?: Id<"users"> | undefined; facilityId?: Id<"facilities"> | undefined; transactionId?: string | undefined; mpesaReceiptNumber?: string | undefined; ... 15 more ...; paymentType: "booking" | ... 3 more ... | "wallet_topup"; } | ... 13 more ... | { ...; }'.
-  Property 'stkSentCount' does not exist on type '{ _id: Id<"payments">; _creationTime: number; userId?: Id<"users"> | undefined; facilityId?: Id<"facilities"> | undefined; transactionId?: string | undefined; mpesaReceiptNumber?: string | undefined; ... 15 more ...; paymentType: "booking" | ... 3 more ... | "wallet_topup"; }'.
-
-Type '"confirmed"' is not assignable to type '"cancelled" | "draft" | "sent" | "paid" | "overdue" | undefined'.
-
-
-Argument of type '"facilityOnboarding"' is not assignable to parameter of type 'TableNamesInDataModel<{ users: { document: { _id: Id<"users">; _creationTime: number; lastLogin?: string | undefined; profileImage?: string | undefined; phoneNumber?: string | undefined; hospital?: string | undefined; ... 10 more ...; isActive: boolean; }; fieldPaths: ExtractFieldPaths<...> | "_id"; indexes: { ...; ...'.
-
-Argument of type '"by_facilityId"' is not assignable to parameter of type '"by_id" | "by_creation_time"'.
-
-Argument of type '"facilityId"' is not assignable to parameter of type '"_creationTime" | "_id"'.
-
-
-Feel free to do request any facility files you need(convex or src files or any other)
-Then I already have 
-
+ON THE ADMIN:
+Here's what to take note of:
+-Should have access of the payment history page also.
+(i) Create an Interface to access payment history, such that it is part of the new tabs, and also in quick actions, it should be easily accessible.

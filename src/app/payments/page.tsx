@@ -1,3 +1,4 @@
+// src/app/payments/page.tsx
 "use client";
 
 import { MpesaPayment } from "@/components/payments/MpesaPayment";

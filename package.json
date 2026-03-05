@@ -7,7 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "convex:dev": "npx convex dev --typecheck=disable",
+    "convex:deploy": "npx convex deploy --typecheck=disable"
   },
   "dependencies": {
     "@convex-dev/auth": "^0.0.90",

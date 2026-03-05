@@ -1,3 +1,4 @@
+// src/lib/mpesa/client.ts
 import { MPESA_API_URLS, TRANSACTION_TYPES } from "./constants";
 import { generatePassword, generateTimestamp } from "./utils";
 import type {
@@ -13,7 +14,6 @@ export class MpesaClient {
   private tokenExpiry: Date | null = null;
 
   constructor(config: MpesaConfig) {
-    // Validate required config
     if (!config.consumerKey || !config.consumerSecret || !config.passkey) {
       console.error("M-Pesa configuration is incomplete");
     }
@@ -21,7 +21,6 @@ export class MpesaClient {
   }
 
   private async getAuthToken(): Promise<string> {
-    // Check if token is still valid
     if (this.authToken && this.tokenExpiry && new Date() < this.tokenExpiry) {
       return this.authToken;
     }
@@ -51,7 +50,6 @@ export class MpesaClient {
 
       const data = await response.json();
       this.authToken = data.access_token;
-      // Token expires in 1 hour (3600 seconds)
       this.tokenExpiry = new Date(Date.now() + 3599 * 1000);
 
       return this.authToken!;
@@ -74,11 +72,8 @@ export class MpesaClient {
       );
 
       const urls = MPESA_API_URLS[this.config.environment];
-
-      // Clean the phone number - remove any non-digit characters
       const phoneNumber = params.phoneNumber.replace(/\D/g, "");
 
-      // Convert paymentType to string for description and ensure it's lowercase
       const transactionDesc = String(params.paymentType).toLowerCase();
 
       const requestBody: STKPushRequest = {
@@ -89,7 +84,7 @@ export class MpesaClient {
         amount: params.amount,
         partyA: phoneNumber,
         partyB: this.config.businessShortCode,
-        phoneNumber: phoneNumber,
+        phoneNumber,
         callBackURL: this.config.callbackUrl,
         accountReference: (params.relatedEntityId || "UZIMACARE").substring(
           0,
@@ -100,7 +95,7 @@ export class MpesaClient {
 
       console.log("Sending STK push request to M-Pesa...", {
         amount: params.amount,
-        phoneNumber: phoneNumber,
+        phoneNumber,
         environment: this.config.environment,
       });
 

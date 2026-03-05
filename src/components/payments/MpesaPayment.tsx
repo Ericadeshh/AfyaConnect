@@ -1,3 +1,4 @@
+// src/components/payments/MpesaPayment.tsx
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,12 +13,11 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { usePayments } from "@/hooks/usePayments";
-import { formatPhoneNumber } from "@/lib/mpesa/utils";
 
 const AMOUNT_OPTIONS = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500];
 
 interface MpesaPaymentProps {
-  amount?: number; // Make optional
+  amount?: number;
   paymentType:
     | "booking"
     | "subscription"
@@ -29,7 +29,7 @@ interface MpesaPaymentProps {
   onSuccess?: (result: any) => void;
   onError?: (error: any) => void;
   description?: string;
-  showAmountSelector?: boolean; // New prop to show/hide amount selector
+  showAmountSelector?: boolean;
 }
 
 export function MpesaPayment({
@@ -64,21 +64,10 @@ export function MpesaPayment({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate phone number - accept 07... format
     let formattedPhone = phoneNumber.trim();
-
-    // Remove any non-digit characters
     formattedPhone = formattedPhone.replace(/\D/g, "");
 
-    // Convert 07... to 2547... for M-Pesa API
-    if (formattedPhone.startsWith("0")) {
-      formattedPhone = "254" + formattedPhone.substring(1);
-    } else if (!formattedPhone.startsWith("254")) {
-      formattedPhone = "254" + formattedPhone;
-    }
-
-    // Validate length (should be 12 digits: 254 + 9 digits)
-    if (formattedPhone.length !== 12) {
+    if (formattedPhone.length < 10) {
       setStatus("error");
       setMessage(
         "Please enter a valid Safaricom phone number starting with 07...",
@@ -98,13 +87,7 @@ export function MpesaPayment({
     setMessage("Initiating payment...");
 
     try {
-      const result = await makePayment(
-        amount,
-        phoneNumber, // Send original format, formatting happens in API
-        paymentType,
-        relatedEntityId,
-        relatedEntityType,
-      );
+      const result = await makePayment(amount, phoneNumber);
 
       setStatus("success");
       setMessage(
@@ -132,7 +115,6 @@ export function MpesaPayment({
             <div className="space-y-4">
               <Label>Select Amount (KES)</Label>
 
-              {/* Preset amounts */}
               <div className="grid grid-cols-5 gap-2">
                 {AMOUNT_OPTIONS.map((amt) => (
                   <button
@@ -153,7 +135,6 @@ export function MpesaPayment({
                 ))}
               </div>
 
-              {/* Custom amount toggle */}
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
@@ -165,7 +146,6 @@ export function MpesaPayment({
                 <Label htmlFor="customAmount">Enter custom amount</Label>
               </div>
 
-              {/* Custom amount input */}
               {useCustomAmount && (
                 <div>
                   <Input

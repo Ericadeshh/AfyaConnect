@@ -19,11 +19,11 @@ export interface STKPushRequest {
   timestamp: string;
   transactionType: typeof TRANSACTION_TYPES.CUSTOMER_PAYBILL_ONLINE;
   amount: number;
-  partyA: string; // Customer phone number
-  partyB: string; // Business short code
-  phoneNumber: string; // Customer phone number
+  partyA: string;
+  partyB: string;
+  phoneNumber: string;
   callBackURL: string;
-  accountReference: string; // e.g., Booking ID
+  accountReference: string;
   transactionDesc: string;
 }
 
@@ -63,7 +63,7 @@ export interface PaymentRecord {
   phoneNumber: string;
   userId?: string;
   facilityId?: string;
-  paymentType: string; // Change to string to accept any value
+  paymentType: string;
   status: keyof typeof PAYMENT_STATUS;
   mpesaReceiptNumber?: string;
   transactionDate?: string;
@@ -76,20 +76,10 @@ export interface PaymentRecord {
   updatedAt: string;
 }
 
-export interface SubscriptionPlan {
-  id: string;
-  name: string;
-  price: number;
-  billingCycle: "monthly" | "quarterly" | "annually";
-  features: string[];
-  maxReferrals: number;
-  maxUsers: number;
-}
-
 export interface InitiatePaymentParams {
   amount: number;
   phoneNumber: string;
-  paymentType: string; // Change to string to accept any value
+  paymentType: string;
   userId?: string;
   facilityId?: string;
   relatedEntityId?: string;

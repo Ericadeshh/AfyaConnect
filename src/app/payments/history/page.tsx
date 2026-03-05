@@ -1,4 +1,7 @@
+// src/app/payments/history/page.tsx
 "use client";
+
+export const dynamic = "force-dynamic";
 
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
@@ -11,8 +14,18 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
-import { formatDate } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+
+function formatDate(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleDateString("en-KE", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function PaymentHistoryPage() {
   const { user } = useAuth();
@@ -87,7 +100,9 @@ export default function PaymentHistoryPage() {
                     </div>
                     <div className="text-right">
                       <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs ${getStatusColor(payment.status)}`}
+                        className={`inline-block px-3 py-1 rounded-full text-xs ${getStatusColor(
+                          payment.status,
+                        )}`}
                       >
                         {payment.status}
                       </span>

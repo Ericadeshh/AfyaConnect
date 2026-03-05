@@ -27,9 +27,7 @@ import type * as http from "../http.js";
 import type * as migrations_index from "../migrations/index.js";
 import type * as migrations_physicianMigrations from "../migrations/physicianMigrations.js";
 import type * as migrations_userMigrations from "../migrations/userMigrations.js";
-import type * as payments_index from "../payments/index.js";
-import type * as payments_mutations from "../payments/mutations.js";
-import type * as payments_queries from "../payments/queries.js";
+import type * as payments from "../payments.js";
 import type * as physicians_queries from "../physicians/queries.js";
 import type * as receivingFacility_helpers from "../receivingFacility/helpers.js";
 import type * as receivingFacility_index from "../receivingFacility/index.js";
@@ -38,9 +36,6 @@ import type * as receivingFacility_queries from "../receivingFacility/queries.js
 import type * as referrals_mutations from "../referrals/mutations.js";
 import type * as referrals_queries from "../referrals/queries.js";
 import type * as referrals_utils from "../referrals/utils.js";
-import type * as subscriptions_index from "../subscriptions/index.js";
-import type * as subscriptions_mutations from "../subscriptions/mutations.js";
-import type * as subscriptions_queries from "../subscriptions/queries.js";
 import type * as test from "../test.js";
 
 import type {
@@ -69,9 +64,7 @@ declare const fullApi: ApiFromModules<{
   "migrations/index": typeof migrations_index;
   "migrations/physicianMigrations": typeof migrations_physicianMigrations;
   "migrations/userMigrations": typeof migrations_userMigrations;
-  "payments/index": typeof payments_index;
-  "payments/mutations": typeof payments_mutations;
-  "payments/queries": typeof payments_queries;
+  payments: typeof payments;
   "physicians/queries": typeof physicians_queries;
   "receivingFacility/helpers": typeof receivingFacility_helpers;
   "receivingFacility/index": typeof receivingFacility_index;
@@ -80,9 +73,6 @@ declare const fullApi: ApiFromModules<{
   "referrals/mutations": typeof referrals_mutations;
   "referrals/queries": typeof referrals_queries;
   "referrals/utils": typeof referrals_utils;
-  "subscriptions/index": typeof subscriptions_index;
-  "subscriptions/mutations": typeof subscriptions_mutations;
-  "subscriptions/queries": typeof subscriptions_queries;
   test: typeof test;
 }>;
 

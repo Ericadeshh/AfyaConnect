@@ -1,11 +1,10 @@
+// src/lib/mpesa-config.ts
 import { MpesaClient } from "./mpesa/client";
 
-// Singleton instance
 let mpesaClientInstance: MpesaClient | null = null;
 
 export function getMpesaClient(): MpesaClient {
   if (!mpesaClientInstance) {
-    // Check if required env vars exist
     const requiredEnvVars = [
       "MPESA_CONSUMER_KEY",
       "MPESA_CONSUMER_SECRET",
@@ -23,7 +22,6 @@ export function getMpesaClient(): MpesaClient {
       console.error(
         `Missing M-Pesa environment variables: ${missingVars.join(", ")}`,
       );
-      // Don't throw, return a dummy client that will log errors
     }
 
     const environment =
@@ -47,7 +45,6 @@ export function getMpesaClient(): MpesaClient {
   return mpesaClientInstance;
 }
 
-// Subscription plans configuration
 export const SUBSCRIPTION_PLANS = {
   BASIC: {
     id: "basic",
