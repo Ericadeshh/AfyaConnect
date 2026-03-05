@@ -60,7 +60,7 @@ export async function checkPaymentStatus(paymentId: string) {
 // Confirm payment manually (admin function)
 export async function confirmPayment(
   bookingId: string,
-  mpesaReceiptNumber: string,
+  mpesaReceiptNumber?: string,
 ): Promise<PaymentResult> {
   try {
     // Find the payment for this booking

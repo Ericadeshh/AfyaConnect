@@ -12,11 +12,13 @@ export const insertPayment = internalMutation({
   args: {
     amount: v.number(),
     phoneNumber: v.string(),
+    userId: v.optional(v.id("users")),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("payments", {
       amount: args.amount,
       phoneNumber: args.phoneNumber,
+      userId: args.userId,
       status: "pending",
       createdAt: Date.now(),
     });
@@ -152,7 +154,8 @@ const getAccessToken = async (): Promise<string> => {
 export const initiateSTKPush = action({
   args: {
     amount: v.number(),
-    phoneNumber: v.string(),
+    // 👈 FIX: Accept both string and number from M-Pesa callback
+    phoneNumber: v.union(v.string(), v.number()),
   },
   handler: async (
     ctx,
@@ -163,7 +166,9 @@ export const initiateSTKPush = action({
     paymentId?: Id<"payments">;
     error?: string;
   }> => {
-    const { amount, phoneNumber } = args;
+    // 👈 FIX: Clean the phone number (remove .0 if it's a number)
+    const phoneNumber = String(args.phoneNumber).replace(".0", "");
+    const { amount } = args;
 
     try {
       console.log(`💰 Initiating payment: KES ${amount} to ${phoneNumber}`);
@@ -208,8 +213,26 @@ export const initiateSTKPush = action({
         },
       );
 
-      const result = await response.json();
-      console.log("📨 M-Pesa response:", result);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ M-Pesa HTTP error:", response.status, errorText);
+        throw new Error(`M-Pesa API error: ${response.status} - ${errorText}`);
+      }
+
+      const responseText = await response.text();
+      console.log("📨 Raw M-Pesa response:", responseText);
+
+      let result;
+      try {
+        result = JSON.parse(responseText);
+      } catch (e) {
+        console.error("❌ Failed to parse M-Pesa response:", responseText);
+        throw new Error(
+          `Invalid JSON from M-Pesa: ${responseText.substring(0, 100)}`,
+        );
+      }
+
+      console.log("📨 Parsed M-Pesa response:", result);
 
       if (result.CheckoutRequestID) {
         await ctx.runMutation(internal.payments.updatePaymentCheckoutId, {

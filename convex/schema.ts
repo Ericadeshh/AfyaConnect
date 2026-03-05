@@ -301,10 +301,24 @@ export default defineSchema({
     ),
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
+    // Enhanced payment tracking fields
+    referralId: v.optional(v.id("referrals")),
+    userId: v.optional(v.id("users")),
+    failureReason: v.optional(v.string()),
+    mpesaReceiptNumber: v.optional(v.string()),
+    transactionDate: v.optional(v.number()),
+    // Metadata for additional context
+    metadata: v.optional(v.any()),
   })
     .index("by_phone", ["phoneNumber"])
     .index("by_status", ["status"])
-    .index("by_checkoutRequestId", ["checkoutRequestId"]),
+    .index("by_checkoutRequestId", ["checkoutRequestId"])
+    .index("by_referralId", ["referralId"])
+    .index("by_userId", ["userId"])
+    .index("by_createdAt", ["createdAt"])
+    .index("by_userId_and_status", ["userId", "status"])
+    .index("by_referralId_and_status", ["referralId", "status"])
+    .index("by_mpesaReceiptNumber", ["mpesaReceiptNumber"]),
 
   // Facility Subscriptions (keep if needed)
   facilitySubscriptions: defineTable({
