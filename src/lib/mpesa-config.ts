@@ -93,4 +93,4 @@ export const SUBSCRIPTION_PLANS = {
 } as const;
 
 export const ONBOARDING_FEE = Number(process.env.ONBOARDING_FEE_AMOUNT) || 5000;
-export const REFERRAL_FEE = Number(process.env.REFERRAL_FEE_AMOUNT) || 100;
+export const REFERRAL_FEE = Number(process.env.REFERRAL_FEE_AMOUNT) || 10;
